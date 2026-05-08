@@ -1,0 +1,162 @@
+version: "3.8"
+
+services:
+  # Infrastructure Services
+  
+  mongodb:
+    image: mongo:7.0
+    container_name: acl-mongodb
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_DATABASE: ecommerce
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - acl-network
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  rabbitmq:
+    image: rabbitmq:3.12-management
+    container_name: acl-rabbitmq
+    hostname: rabbitmq
+    ports:
+      - "5672:5672"   # AMQP port
+      - "15672:15672" # Management UI
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: admin123
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      acl-network:
+        aliases:
+          - rabbitmq
+    healthcheck:
+      test: ["CMD-SHELL", "rabbitmq-diagnostics -q ping"]
+      interval: 15s
+      timeout: 10s
+      retries: 15
+      start_period: 60s
+
+  # Application Services
+
+  testeapi:
+    build:
+      context: .
+      dockerfile: teste/K1.Atlas.TesteApi/Dockerfile
+    container_name: acl-testeapi
+    ports:
+      - "5000:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+      MongoDB__Host: mongodb
+      MongoDB__Port: 27017
+      MongoDB__DatabaseName: ecommerce
+      RabbitMQ__Host: rabbitmq
+      RabbitMQ__User: admin
+      RabbitMQ__Password: admin123
+      RabbitMQ__DefaultExchange: Pedidos
+      OTEL_EXPORTER_OTLP_ENDPOINT: https://otlp-gateway-prod-sa-east-1.grafana.net/otlp
+      OTEL_EXPORTER_OTLP_PROTOCOL: http/protobuf
+      OTEL_EXPORTER_OTLP_HEADERS: Authorization=Basic MTMwNDc3ODpnbGNfZXlKdklqb2lNVFEzTWpNNE9DSXNJbTRpT2lKemRHRmpheTB4TXpBME56YzRMVzkwYkhBdGQzSnBkR1V0ZEdWemRHVWlMQ0pySWpvaVdIWk9Oekl4WVRGeU16SkZNemxuVkV4NU5EUjVjMlYwSWl3aWJTSTZleUp5SWpvaWNISnZaQzF6WVMxbFlYTjBMVEVpZlgwPQ==
+      OpenTelemetry__ServiceName: testeapi
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - acl-network
+
+  worker-validacao:
+    build:
+      context: .
+      dockerfile: teste/K1.Atlas.WorkerValidacao/Dockerfile
+    container_name: acl-worker-validacao
+    environment:
+      DOTNET_ENVIRONMENT: Development
+      MongoDB__Host: mongodb
+      MongoDB__Port: 27017
+      MongoDB__DatabaseName: ecommerce
+      RabbitMQ__Host: rabbitmq
+      RabbitMQ__User: admin
+      RabbitMQ__Password: admin123
+      RabbitMQ__DefaultExchange: Pedidos
+      OTEL_EXPORTER_OTLP_ENDPOINT: https://otlp-gateway-prod-sa-east-1.grafana.net/otlp
+      OTEL_EXPORTER_OTLP_PROTOCOL: http/protobuf
+      OTEL_EXPORTER_OTLP_HEADERS: Authorization=Basic MTMwNDc3ODpnbGNfZXlKdklqb2lNVFEzTWpNNE9DSXNJbTRpT2lKemRHRmpheTB4TXpBME56YzRMVzkwYkhBdGQzSnBkR1V0ZEdWemRHVWlMQ0pySWpvaVdIWk9Oekl4WVRGeU16SkZNemxuVkV4NU5EUjVjMlYwSWl3aWJTSTZleUp5SWpvaWNISnZaQzF6WVMxbFlYTjBMVEVpZlgwPQ==
+      OpenTelemetry__ServiceName: worker-validacao
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - acl-network
+
+  worker-estoque:
+    build:
+      context: .
+      dockerfile: teste/K1.Atlas.WorkerEstoque/Dockerfile
+    container_name: acl-worker-estoque
+    environment:
+      DOTNET_ENVIRONMENT: Development
+      MongoDB__Host: mongodb
+      MongoDB__Port: 27017
+      MongoDB__DatabaseName: ecommerce
+      RabbitMQ__Host: rabbitmq
+      RabbitMQ__User: admin
+      RabbitMQ__Password: admin123
+      RabbitMQ__DefaultExchange: Pedidos
+      OTEL_EXPORTER_OTLP_ENDPOINT: https://otlp-gateway-prod-sa-east-1.grafana.net/otlp
+      OTEL_EXPORTER_OTLP_PROTOCOL: http/protobuf
+      OTEL_EXPORTER_OTLP_HEADERS: Authorization=Basic MTMwNDc3ODpnbGNfZXlKdklqb2lNVFEzTWpNNE9DSXNJbTRpT2lKemRHRmpheTB4TXpBME56YzRMVzkwYkhBdGQzSnBkR1V0ZEdWemRHVWlMQ0pySWpvaVdIWk9Oekl4WVRGeU16SkZNemxuVkV4NU5EUjVjMlYwSWl3aWJTSTZleUp5SWpvaWNISnZaQzF6WVMxbFlYTjBMVEVpZlgwPQ==
+      OpenTelemetry__ServiceName: worker-estoque
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - acl-network
+
+  worker-fiscal:
+    build:
+      context: .
+      dockerfile: teste/K1.Atlas.WorkerFiscal/Dockerfile
+    container_name: acl-worker-fiscal
+    environment:
+      DOTNET_ENVIRONMENT: Development
+      MongoDB__Host: mongodb
+      MongoDB__Port: 27017
+      MongoDB__DatabaseName: ecommerce
+      RabbitMQ__Host: rabbitmq
+      RabbitMQ__User: admin
+      RabbitMQ__Password: admin123
+      RabbitMQ__DefaultExchange: Pedidos
+      OTEL_EXPORTER_OTLP_ENDPOINT: https://otlp-gateway-prod-sa-east-1.grafana.net/otlp
+      OTEL_EXPORTER_OTLP_PROTOCOL: http/protobuf
+      OTEL_EXPORTER_OTLP_HEADERS: Authorization=Basic MTMwNDc3ODpnbGNfZXlKdklqb2lNVFEzTWpNNE9DSXNJbTRpT2lKemRHRmpheTB4TXpBME56YzRMVzkwYkhBdGQzSnBkR1V0ZEdWemRHVWlMQ0pySWpvaVdIWk9Oekl4WVRGeU16SkZNemxuVkV4NU5EUjVjMlYwSWl3aWJTSTZleUp5SWpvaWNISnZaQzF6WVMxbFlYTjBMVEVpZlgwPQ==
+      OpenTelemetry__ServiceName: worker-fiscal
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - acl-network
+
+networks:
+  acl-network:
+    driver: bridge
+
+volumes:
+  mongodb_data:
+  rabbitmq_data:
+  seq_data:

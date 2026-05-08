@@ -1,0 +1,51 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "build",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "build",
+        "${workspaceFolder}/teste/K1.Atlas.TesteApi/K1.Atlas.TesteApi.csproj",
+        "/property:GenerateFullPaths=true",
+        "/consoleloggerparameters:NoSummary"
+      ],
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "publish",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "publish",
+        "${workspaceFolder}/teste/K1.Atlas.TesteApi/K1.Atlas.TesteApi.csproj",
+        "/property:GenerateFullPaths=true",
+        "/consoleloggerparameters:NoSummary"
+      ],
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "watch",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "watch",
+        "run",
+        "--project",
+        "${workspaceFolder}/teste/K1.Atlas.TesteApi/K1.Atlas.TesteApi.csproj"
+      ],
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "Generate coverage stats",
+      "command": "reportgenerator",
+      "type": "shell",
+      "args": [
+        "-reports:${workspaceFolder}/teste/K1.Atlas.UnitTest/lcov.info",
+        "-targetdir:${workspaceFolder}/teste/K1.Atlas.UnitTest/covstats"
+      ],
+      "problemMatcher": []
+    }
+  ]
+}

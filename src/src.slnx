@@ -1,0 +1,8 @@
+<Solution>
+  <Project Path="K1.Atlas.Domain/K1.Atlas.Domain.csproj" />
+  <Project Path="K1.Atlas.Host/K1.Atlas.Host.csproj" />
+  <Project Path="K1.Atlas.MongoDB/K1.Atlas.MongoDB.csproj" />
+  <Project Path="K1.Atlas.PubSub.RabbitMQ/K1.Atlas.PubSub.RabbitMQ.csproj" />
+  <Project Path="K1.Atlas.PubSub/K1.Atlas.PubSub.csproj" />
+  <Project Path="K1.Atlas.Telemetry/K1.Atlas.Telemetry.csproj" />
+</Solution>

@@ -1,0 +1,23 @@
+<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Folder Name="/src/">
+    <Project Path="src/K1.Atlas.Host/K1.Atlas.Host.csproj" />
+    <Project Path="src/K1.Atlas.PubSub.RabbitMQ/K1.Atlas.PubSub.RabbitMQ.csproj" />
+    <Project Path="src/K1.Atlas.PubSub/K1.Atlas.PubSub.csproj" />
+    <Project Path="src/K1.Atlas.Telemetry/K1.Atlas.Telemetry.csproj" />
+  </Folder>
+  <Folder Name="/teste/">
+    <Project Path="teste/K1.Atlas.IntegrationTest/K1.Atlas.IntegrationTest.csproj" />
+    <Project Path="teste/K1.Atlas.TesteApi/K1.Atlas.TesteApi.csproj" />
+    <Project Path="teste/K1.Atlas.UnitTest/K1.Atlas.UnitTest.csproj" />
+    <Project Path="teste/K1.Atlas.WorkerEstoque/K1.Atlas.WorkerEstoque.csproj" />
+    <Project Path="teste/K1.Atlas.WorkerFiscal/K1.Atlas.WorkerFiscal.csproj" />
+    <Project Path="teste/K1.Atlas.WorkerValidacao/K1.Atlas.WorkerValidacao.csproj" />
+  </Folder>
+  <Project Path="src/K1.Atlas.Domain/K1.Atlas.Domain.csproj" />
+  <Project Path="src/K1.Atlas.MongoDB/K1.Atlas.MongoDB.csproj" />
+</Solution>

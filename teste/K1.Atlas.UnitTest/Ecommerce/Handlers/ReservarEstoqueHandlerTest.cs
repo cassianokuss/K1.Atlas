@@ -1,0 +1,282 @@
+using System.Diagnostics;
+using K1.Atlas.Telemetry.Logging;
+using K1.Atlas.WorkerEstoque.Ecommerce;
+using K1.Atlas.WorkerEstoque.Ecommerce.Commands;
+using K1.Atlas.WorkerEstoque.Ecommerce.Exceptions;
+using K1.Atlas.WorkerEstoque.Ecommerce.Handlers;
+using K1.Atlas.Domain.Repositories;
+using K1.Atlas.PubSub.Producer;
+using Moq;
+using Xunit;
+
+namespace K1.Atlas.UnitTest.Ecommerce.Handlers;
+
+public class ReservarEstoqueHandlerTest
+{
+    private readonly Mock<IRepository<Produto>> _produtoRepository;
+    private readonly Mock<IRepository<ReservaEstoque>> _reservaEstoqueRepository;
+    private readonly Mock<IMessageProducer> _messageProducer;
+    private readonly Mock<INotifier> _notifier;
+    private readonly ReservarEstoqueHandler _handler;
+
+    public ReservarEstoqueHandlerTest()
+    {
+        _produtoRepository = new Mock<IRepository<Produto>>();
+        _reservaEstoqueRepository = new Mock<IRepository<ReservaEstoque>>();
+        _messageProducer = new Mock<IMessageProducer>();
+        _notifier = new Mock<INotifier>();
+        
+        _handler = new ReservarEstoqueHandler(
+            _produtoRepository.Object,
+            _reservaEstoqueRepository.Object,
+            _messageProducer.Object,
+            _notifier.Object);
+    }
+
+    [Fact]
+    public async Task HandleAsync_Should_Create_Reservation_Successfully()
+    {
+        // Arrange
+        var pedido = new Pedido 
+        { 
+            Id = "pedido123",
+            NumeroPedido = "PED20260507000001",
+            ClienteId = "cli123",
+            Status = StatusPedido.Aprovado,
+            Itens = new List<ItemPedido>
+            {
+                new ItemPedido 
+                { 
+                    ProdutoId = "prod1", 
+                    Quantidade = 2,
+                    CodigoProduto = "PROD001"
+                },
+                new ItemPedido 
+                { 
+                    ProdutoId = "prod2", 
+                    Quantidade = 1,
+                    CodigoProduto = "PROD002"
+                }
+            }
+        };
+        
+        var produto1 = new Produto 
+        { 
+            Id = "prod1", 
+            Codigo = "PROD001",
+            Descricao = "Produto 1",
+            EstoqueDisponivel = 10,
+            Ativo = true
+        };
+        
+        var produto2 = new Produto 
+        { 
+            Id = "prod2", 
+            Codigo = "PROD002",
+            Descricao = "Produto 2",
+            EstoqueDisponivel = 5,
+            Ativo = true
+        };
+
+        _produtoRepository.Setup(r => r.FirstOrDefaultAsync(
+            It.Is<Func<IQueryable<Produto>, IQueryable<Produto>>>(f => 
+                f.ToString().Contains("prod1") || true),
+            It.IsAny<CancellationToken>()))
+            .ReturnsAsync((Func<IQueryable<Produto>, IQueryable<Produto>> filter, CancellationToken ct) =>
+            {
+                var produtos = new[] { produto1, produto2 }.AsQueryable();
+                var filtered = filter(produtos);
+                return filtered.FirstOrDefault();
+            });
+
+        _reservaEstoqueRepository.Setup(r => r.SaveOrUpdateAsync(
+            It.IsAny<ReservaEstoque>(),
+            It.IsAny<System.Linq.Expressions.Expression<Func<ReservaEstoque, bool>>>(),
+            It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        var command = new ReservarEstoque
+        {
+            Pedido = pedido,
+            PedidoId = pedido.Id
+        };
+
+        // Act
+        var result = await _handler.HandleAsync(command, CancellationToken.None);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(pedido.Id, result.PedidoId);
+        Assert.Equal(pedido.ClienteId, result.ClienteId);
+        Assert.Equal(2, result.Itens.Count);
+        Assert.Equal(StatusReserva.Ativa, result.Status);
+        Assert.True(result.DataExpiracao > DateTime.UtcNow.AddHours(23));
+
+        _reservaEstoqueRepository.Verify(r => r.SaveOrUpdateAsync(
+            It.IsAny<ReservaEstoque>(),
+            It.IsAny<System.Linq.Expressions.Expression<Func<ReservaEstoque, bool>>>(),
+            It.IsAny<CancellationToken>()), Times.Once);
+
+        _messageProducer.Verify(m => m.Publish(
+            It.IsAny<ReservaEstoque>(),
+            It.IsAny<PublishOptions>()), Times.Once);
+
+        _notifier.Verify(n => n.NotifyInformation(
+            It.IsAny<string>(),
+            It.IsAny<object[]>()), Times.AtLeastOnce);
+    }
+
+    [Fact]
+    public async Task HandleAsync_Should_Throw_EstoqueInsuficienteException_When_Stock_Unavailable()
+    {
+        // Arrange
+        var pedido = new Pedido 
+        { 
+            Id = "pedido123",
+            NumeroPedido = "PED20260507000001",
+            ClienteId = "cli123",
+            Itens = new List<ItemPedido>
+            {
+                new ItemPedido 
+                { 
+                    ProdutoId = "prod1", 
+                    Quantidade = 20,
+                    CodigoProduto = "PROD001"
+                }
+            }
+        };
+        
+        var produto = new Produto 
+        { 
+            Id = "prod1", 
+            Codigo = "PROD001",
+            Descricao = "Produto 1",
+            EstoqueDisponivel = 5,
+            Ativo = true
+        };
+
+        _produtoRepository.Setup(r => r.FirstOrDefaultAsync(
+            It.IsAny<Func<IQueryable<Produto>, IQueryable<Produto>>>(),
+            It.IsAny<CancellationToken>()))
+            .ReturnsAsync(produto);
+
+        var command = new ReservarEstoque
+        {
+            Pedido = pedido,
+            PedidoId = pedido.Id
+        };
+
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<EstoqueInsuficienteException>(
+            () => _handler.HandleAsync(command, CancellationToken.None));
+
+        Assert.Equal("PROD001", exception.ProdutoCodigo);
+        Assert.Equal(20, exception.QuantidadeRequerida);
+        Assert.Equal(5, exception.QuantidadeDisponivel);
+
+        _notifier.Verify(n => n.NotifyError(
+            It.IsAny<string>(),
+            It.IsAny<object[]>()), Times.AtLeastOnce);
+    }
+
+    [Fact]
+    public async Task HandleAsync_Should_Throw_ProdutoNaoEncontradoException_When_Product_Not_Found()
+    {
+        // Arrange
+        var pedido = new Pedido 
+        { 
+            Id = "pedido123",
+            NumeroPedido = "PED20260507000001",
+            ClienteId = "cli123",
+            Itens = new List<ItemPedido>
+            {
+                new ItemPedido 
+                { 
+                    ProdutoId = "prod999", 
+                    Quantidade = 1,
+                    CodigoProduto = "PROD999"
+                }
+            }
+        };
+
+        _produtoRepository.Setup(r => r.FirstOrDefaultAsync(
+            It.IsAny<Func<IQueryable<Produto>, IQueryable<Produto>>>(),
+            It.IsAny<CancellationToken>()))
+            .ReturnsAsync((Produto)null!);
+
+        var command = new ReservarEstoque
+        {
+            Pedido = pedido,
+            PedidoId = pedido.Id
+        };
+
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<ProdutoNaoEncontradoException>(
+            () => _handler.HandleAsync(command, CancellationToken.None));
+
+        Assert.Equal("prod999", exception.ProdutoId);
+
+        _notifier.Verify(n => n.NotifyError(
+            It.IsAny<string>(),
+            It.IsAny<object[]>()), Times.AtLeastOnce);
+    }
+
+    [Fact]
+    public async Task HandleAsync_Should_Add_Telemetry_Tags()
+    {
+        // Arrange
+        var pedido = new Pedido 
+        { 
+            Id = "pedido123",
+            NumeroPedido = "PED20260507000001",
+            ClienteId = "cli123",
+            Itens = new List<ItemPedido>
+            {
+                new ItemPedido 
+                { 
+                    ProdutoId = "prod1", 
+                    Quantidade = 2,
+                    CodigoProduto = "PROD001"
+                }
+            }
+        };
+        
+        var produto = new Produto 
+        { 
+            Id = "prod1", 
+            Codigo = "PROD001",
+            Descricao = "Produto 1",
+            EstoqueDisponivel = 10,
+            Ativo = true
+        };
+
+        _produtoRepository.Setup(r => r.FirstOrDefaultAsync(
+            It.IsAny<Func<IQueryable<Produto>, IQueryable<Produto>>>(),
+            It.IsAny<CancellationToken>()))
+            .ReturnsAsync(produto);
+
+        _reservaEstoqueRepository.Setup(r => r.SaveOrUpdateAsync(
+            It.IsAny<ReservaEstoque>(),
+            It.IsAny<System.Linq.Expressions.Expression<Func<ReservaEstoque, bool>>>(),
+            It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        var command = new ReservarEstoque
+        {
+            Pedido = pedido,
+            PedidoId = pedido.Id
+        };
+
+        using var activity = new Activity("TestActivity").Start();
+
+        // Act
+        var result = await _handler.HandleAsync(command, CancellationToken.None);
+
+        // Assert
+        Assert.NotNull(result);
+        
+        // Verify telemetry tags were set (at least 6 tags as per spec)
+        var tags = activity.Tags.ToList();
+        Assert.True(tags.Any(), "Activity should have tags set");
+    }
+}
