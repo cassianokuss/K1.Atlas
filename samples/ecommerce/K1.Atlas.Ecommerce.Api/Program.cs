@@ -3,10 +3,22 @@ using Microsoft.AspNetCore.Mvc;
 using K1.Atlas.Domain.Repositories;
 using K1.Atlas.Ecommerce.Api.Ecommerce;
 using K1.Atlas.Ecommerce.Api.Ecommerce.Commands;
+using K1.Atlas.Ecommerce.Api.Ecommerce.Events;
+using K1.Atlas.Ecommerce.Api.Ecommerce.Subscriptions;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.ConfigureApi(builder.Configuration);
+
+// Register background consumer for NotaFiscalEmitida
+builder.Services.AddAsyncConsumer<NotaFiscalEmitida, NotaFiscalEmitidaSubscription>(
+    consumerBuilder => consumerBuilder.ForRoutingKeys(
+        "NotaFiscalEmitida"
+        )
+    .WithQueueName("NotaFiscalEmitidaQueue")
+    .ForExchange("Pedidos")
+    .WithManualAck()
+);
 
 var app = builder.Build();
 

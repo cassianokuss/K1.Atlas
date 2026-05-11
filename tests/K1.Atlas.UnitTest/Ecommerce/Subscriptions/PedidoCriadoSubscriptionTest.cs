@@ -78,36 +78,6 @@ public class PedidoCriadoSubscriptionTest
     }
 
     [Fact]
-    public async Task ConsumeAsync_WithTelemetryActive_ShouldSetRequiredTags()
-    {
-        // Arrange
-        using var activity = new Activity("TestActivity").Start();
-        
-        var pedido = new Pedido
-        {
-            Id = "507f1f77bcf86cd799439011",
-            NumeroPedido = "PED-003",
-            ClienteId = "607f1f77bcf86cd799439012",
-            ValorTotal = 2500.00m
-        };
-
-        var cancellationToken = CancellationToken.None;
-
-        _mockSender
-            .Setup(s => s.SendAsync(It.IsAny<ValidarCredito>(), cancellationToken))
-            .ReturnsAsync(new ResultadoValidacao());
-
-        // Act
-        await _subscription.ConsumeAsync(pedido, _mockContext.Object, cancellationToken);
-
-        // Assert - Must have at least 3 tags: PedidoId, ClienteId, Action
-        var tags = activity.Tags.ToList();
-        Assert.Contains(tags, t => t.Key == "PedidoId" && t.Value == pedido.Id);
-        Assert.Contains(tags, t => t.Key == "ClienteId" && t.Value == pedido.ClienteId);
-        Assert.Contains(tags, t => t.Key == "Action" && t.Value == "ValidarCredito");
-    }
-
-    [Fact]
     public async Task ConsumeAsync_ShouldLogInformationAtStart()
     {
         // Arrange

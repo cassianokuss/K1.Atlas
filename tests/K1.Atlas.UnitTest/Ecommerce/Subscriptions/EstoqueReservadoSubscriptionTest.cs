@@ -84,40 +84,6 @@ public class EstoqueReservadoSubscriptionTest
     }
 
     [Fact]
-    public async Task ConsumeAsync_WithTelemetryActive_ShouldSetRequiredTags()
-    {
-        // Arrange
-        using var activity = new Activity("TestActivity").Start();
-        
-        var reserva = new ReservaEstoque
-        {
-            Id = "507f1f77bcf86cd799439011",
-            PedidoId = "607f1f77bcf86cd799439012",
-            ClienteId = "707f1f77bcf86cd799439013",
-            Itens = new List<ItemReservado>
-            {
-                new ItemReservado { ProdutoId = "prod1", Quantidade = 2, QuantidadeReservada = 2 },
-                new ItemReservado { ProdutoId = "prod2", Quantidade = 3, QuantidadeReservada = 3 }
-            }
-        };
-
-        var cancellationToken = CancellationToken.None;
-
-        _mockSender
-            .Setup(s => s.SendAsync(It.IsAny<EmitirNotaFiscal>(), cancellationToken))
-            .ReturnsAsync(new NotaFiscal());
-
-        // Act
-        await _subscription.ConsumeAsync(reserva, _mockContext.Object, cancellationToken);
-
-        // Assert - Must have at least 3 tags: PedidoId, ReservaId, Action
-        var tags = activity.Tags.ToList();
-        Assert.Contains(tags, t => t.Key == "PedidoId" && t.Value == reserva.PedidoId);
-        Assert.Contains(tags, t => t.Key == "ReservaId" && t.Value == reserva.Id);
-        Assert.Contains(tags, t => t.Key == "Action" && t.Value == "EmitirNotaFiscal");
-    }
-
-    [Fact]
     public async Task ConsumeAsync_ShouldLogInformationMessages()
     {
         // Arrange

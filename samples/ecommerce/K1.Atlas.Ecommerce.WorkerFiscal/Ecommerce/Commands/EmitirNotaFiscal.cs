@@ -3,6 +3,7 @@ using K1.Atlas.Domain.Repositories;
 using K1.Atlas.PubSub.Producer;
 using K1.Atlas.Telemetry.Logging;
 using K1.Atlas.Ecommerce.WorkerFiscal.Ecommerce.Services;
+using K1.Atlas.Ecommerce.WorkerFiscal.Ecommerce.Events;
 using MediatR;
 
 namespace K1.Atlas.Ecommerce.WorkerFiscal.Ecommerce.Commands;
@@ -174,10 +175,25 @@ public class EmitirNotaFiscalHandler(
         // Step 10: Publish message to RabbitMQ (only if authorized)
         if (sucesso)
         {
+            // Publish NotaFiscal message (existing)
             await messageProducer.Publish(notaFiscal, new PublishOptions
             {
                 RoutingKey = "NotaFiscalEmitida"
             });
+
+            // Publish NotaFiscalEmitida event for API to update Pedido status
+            var notaFiscalEmitida = new NotaFiscalEmitida
+            {
+                PedidoId = notaFiscal.PedidoId,
+                NotaFiscalId = notaFiscal.Id,
+                NumeroNotaFiscal = notaFiscal.Numero,
+                ChaveAcesso = notaFiscal.ChaveAcesso,
+                ProtocoloAutorizacao = protocolo ?? string.Empty,
+                DataEmissao = notaFiscal.DataEmissao,
+                ValorTotal = notaFiscal.ValorTotal
+            };
+
+            await messageProducer.Publish(notaFiscalEmitida, PublishOptions.RoutingTo("NotaFiscalEmitida").ToExchange("Pedidos"));
 
             notifier.NotifyInformation("Nota fiscal emitida com sucesso. {NumeroNF} {Serie} {Protocolo} {ValorTotal} {Tentativas}", 
                 notaFiscal.Numero, notaFiscal.Serie, protocolo, notaFiscal.ValorTotal, tentativa);

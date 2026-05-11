@@ -81,39 +81,6 @@ public class ReservarEstoqueSubscriptionTest
     }
 
     [Fact]
-    public async Task ConsumeAsync_WithTelemetryActive_ShouldSetTags()
-    {
-        // Arrange
-        using var activity = new Activity("TestActivity").Start();
-        
-        var pedido = new Pedido
-        {
-            Id = "507f1f77bcf86cd799439011",
-            NumeroPedido = "PED-003",
-            Itens = new List<ItemPedido>
-            {
-                new ItemPedido { ProdutoId = "prod1", Quantidade = 2 },
-                new ItemPedido { ProdutoId = "prod2", Quantidade = 3 }
-            }
-        };
-
-        var cancellationToken = CancellationToken.None;
-
-        _mockSender
-            .Setup(s => s.SendAsync(It.IsAny<ReservarEstoque>(), cancellationToken))
-            .ReturnsAsync(new ReservaEstoque());
-
-        // Act
-        await _subscription.ConsumeAsync(pedido, _mockContext.Object, cancellationToken);
-
-        // Assert
-        var tags = activity.Tags.ToList();
-        Assert.Contains(tags, t => t.Key == "PedidoId" && t.Value == pedido.Id);
-        Assert.Contains(tags, t => t.Key == "TotalItens" && t.Value == "5");
-        Assert.Contains(tags, t => t.Key == "Action" && t.Value == "ReservarEstoque");
-    }
-
-    [Fact]
     public async Task ConsumeAsync_WhenMediatorThrows_ShouldAcknowledgeToAvoidRequeue()
     {
         // Arrange

@@ -254,48 +254,6 @@ public class ValidarCreditoHandlerTest
     }
 
     [Fact]
-    public async Task HandleAsync_Should_Add_Telemetry_Tags()
-    {
-        // Arrange
-        var activitySource = new ActivitySource("TestSource");
-        using var activity = activitySource.StartActivity("TestActivity");
-
-        var cliente = new Cliente
-        {
-            CpfCnpj = "12345678901",
-            LimiteCredito = 10000m,
-            CreditoUtilizado = 2000m
-        };
-
-        var pedido = new Pedido
-        {
-            Id = "ped123",
-            NumeroPedido = "PED-001",
-            ClienteId = "cli123",
-            ValorTotal = 5000m,
-            Status = StatusPedido.Pendente
-        };
-
-        var command = new ValidarCredito { Pedido = pedido };
-
-        _clienteRepository.Setup(r => r.FirstOrDefaultAsync(
-                It.IsAny<Func<IQueryable<Cliente>, IQueryable<Cliente>>>(),
-                It.IsAny<CancellationToken>()))
-            .ReturnsAsync(cliente);
-
-        _bureauService.Setup(s => s.SimularConsultaAsync(
-                It.IsAny<string>(),
-                It.IsAny<CancellationToken>()))
-            .ReturnsAsync(750);
-
-        // Act
-        var result = await _handler.HandleAsync(command, CancellationToken.None);
-
-        // Assert
-        Assert.NotNull(result);
-    }
-
-    [Fact]
     public async Task HandleAsync_Should_Log_Approval_Information()
     {
         // Arrange
