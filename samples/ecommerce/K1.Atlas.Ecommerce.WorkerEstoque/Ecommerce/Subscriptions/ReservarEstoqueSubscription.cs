@@ -22,12 +22,7 @@ public class ReservarEstoqueSubscription : IBackgroundConsumer<Pedido>
     {
         try
         {
-            // Add OpenTelemetry tags
             var totalItens = obj.Itens?.Sum(i => i.Quantidade) ?? 0;
-            
-            Activity.Current?.SetTag("PedidoId", obj.Id);
-            Activity.Current?.SetTag("TotalItens", totalItens.ToString());
-            Activity.Current?.SetTag("Action", "ReservarEstoque");
 
             _notifier.NotifyInformation(
                 "Iniciando reserva de estoque. PedidoId: {PedidoId} NumeroPedido: {NumeroPedido} TotalItens: {TotalItens}",

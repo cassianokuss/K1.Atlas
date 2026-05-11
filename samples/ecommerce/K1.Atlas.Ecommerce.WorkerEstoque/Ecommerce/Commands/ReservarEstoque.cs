@@ -3,7 +3,6 @@ using K1.Atlas.PubSub.Producer;
 using K1.Atlas.Telemetry.Logging;
 using K1.Atlas.Ecommerce.WorkerEstoque.Ecommerce.Exceptions;
 using MediatR;
-using System.Diagnostics;
 
 namespace K1.Atlas.Ecommerce.WorkerEstoque.Ecommerce.Commands;
 
@@ -94,15 +93,7 @@ public class ReservarEstoqueHandler(
             reserva,
             PublishOptions.RoutingTo("EstoqueReservado").ToExchange("Pedidos"));
 
-        // Step 6: Add OpenTelemetry tags (6+ tags as per spec)
-        Activity.Current?.SetTag("pedido.id", pedido.Id);
-        Activity.Current?.SetTag("pedido.numero", pedido.NumeroPedido);
-        Activity.Current?.SetTag("reserva.id", reserva.Id);
-        Activity.Current?.SetTag("reserva.cliente_id", reserva.ClienteId);
-        Activity.Current?.SetTag("reserva.total_itens", reserva.Itens.Count.ToString());
-        Activity.Current?.SetTag("reserva.data_expiracao", reserva.DataExpiracao.ToString("O"));
-
-        // Step 7: Structured logging (success)
+        // Step 6: Structured logging (success)
         notifier.NotifyInformation(
             "Estoque reservado com sucesso. {PedidoId} {NumeroPedido} {ReservaId} {TotalItens} {DataExpiracao}",
             pedido.Id,

@@ -65,17 +65,6 @@ public class EmitirNotaFiscalHandler(
         var valorIPI = Math.Round(valorBase * AliquotaIPI, 2);
         var valorTotal = valorBase + valorICMS + valorPIS + valorCOFINS + valorIPI;
 
-        // Add OpenTelemetry tags (8+ tags as per spec)
-        Activity.Current?.SetTag("pedido.id", pedido.Id);
-        Activity.Current?.SetTag("pedido.numero", pedido.NumeroPedido);
-        Activity.Current?.SetTag("cliente.id", cliente.Nome);
-        Activity.Current?.SetTag("nota_fiscal.valor_base", valorBase.ToString("F2"));
-        Activity.Current?.SetTag("nota_fiscal.icms", valorICMS.ToString("F2"));
-        Activity.Current?.SetTag("nota_fiscal.pis", valorPIS.ToString("F2"));
-        Activity.Current?.SetTag("nota_fiscal.cofins", valorCOFINS.ToString("F2"));
-        Activity.Current?.SetTag("nota_fiscal.ipi", valorIPI.ToString("F2"));
-        Activity.Current?.SetTag("nota_fiscal.valor_total", valorTotal.ToString("F2"));
-
         notifier.NotifyInformation("Impostos calculados. {PedidoId} ICMS:{ICMS} PIS:{PIS} COFINS:{COFINS} IPI:{IPI}", 
             pedido.NumeroPedido, valorICMS, valorPIS, valorCOFINS, valorIPI);
 
@@ -115,12 +104,6 @@ public class EmitirNotaFiscalHandler(
             }).ToList()
         };
 
-        // Add additional telemetry tags after NotaFiscal creation
-        Activity.Current?.SetTag("nota_fiscal.id", notaFiscal.Id);
-        Activity.Current?.SetTag("nota_fiscal.chave_acesso", notaFiscal.ChaveAcesso);
-        Activity.Current?.SetTag("nota_fiscal.numero", notaFiscal.Numero);
-        Activity.Current?.SetTag("nota_fiscal.serie", notaFiscal.Serie);
-        
         // Step 6: Save initial NotaFiscal
         await notaFiscalRepository.SaveOrUpdateAsync(
             notaFiscal,
@@ -188,11 +171,7 @@ public class EmitirNotaFiscalHandler(
             nf => nf.Id == notaFiscal.Id,
             cancellationToken);
 
-        // Add final telemetry tags
-        Activity.Current?.SetTag("nota_fiscal.tentativas_envio", tentativa);
-        Activity.Current?.SetTag("nota_fiscal.status", notaFiscal.Status.ToString());
-
-        // Step 11: Publish message to RabbitMQ (only if authorized)
+        // Step 10: Publish message to RabbitMQ (only if authorized)
         if (sucesso)
         {
             await messageProducer.Publish(notaFiscal, new PublishOptions

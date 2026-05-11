@@ -1,7 +1,6 @@
 using K1.Atlas.Domain.Repositories;
 using K1.Atlas.Telemetry.Logging;
 using MediatR;
-using System.Diagnostics;
 
 namespace K1.Atlas.Ecommerce.WorkerEstoque.Ecommerce.Commands;
 
@@ -52,20 +51,14 @@ public class LiberarEstoqueHandler(
 
         // Step 4: Calculate total items
         var totalItens = reserva.Itens?.Count ?? 0;
-        
-        // Step 5: Add OpenTelemetry tags (4 tags minimum): PedidoId, ReservaId, Status, TotalItensLiberados
-        Activity.Current?.SetTag("pedido.id", request.PedidoId);
-        Activity.Current?.SetTag("reserva.id", reserva.Id);
-        Activity.Current?.SetTag("reserva.status", reserva.Status.ToString());
-        Activity.Current?.SetTag("reserva.total_itens", totalItens.ToString());
 
-        // Step 6: Persist to MongoDB
+        // Step 5: Persist to MongoDB
         await reservaEstoqueRepository.SaveOrUpdateAsync(
             reserva,
             r => r.Id == reserva.Id,
             cancellationToken);
 
-        // Step 7: Add structured logging via INotifier (2+ log entries)
+        // Step 6: Add structured logging via INotifier (2+ log entries)
         notifier.NotifyInformation(
             "Estoque liberado com sucesso. {PedidoId} {ReservaId} {Status} {TotalItens}",
             request.PedidoId,
@@ -73,7 +66,7 @@ public class LiberarEstoqueHandler(
             reserva.Status.ToString(),
             reserva.Itens?.Count ?? 0);
 
-        // Step 8: Return true on success
+        // Step 7: Return true on success
         return true;
     }
 }

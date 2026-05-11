@@ -22,11 +22,6 @@ public class EstoqueReservadoSubscription : IBackgroundConsumer<ReservaEstoque>
     {
         try
         {
-            // Add OpenTelemetry tags
-            Activity.Current?.SetTag("PedidoId", obj.PedidoId);
-            Activity.Current?.SetTag("ReservaId", obj.Id);
-            Activity.Current?.SetTag("Action", "EmitirNotaFiscal");
-
             _notifier.NotifyInformation(
                 "Iniciando emissão de nota fiscal após reserva de estoque. PedidoId: {PedidoId} ReservaId: {ReservaId}",
                 obj.PedidoId, obj.Id);
