@@ -1,5 +1,6 @@
 using K1.Atlas.Telemetry.Logging;
 using K1.Atlas.Ecommerce.Api.Ecommerce;
+using OpenTelemetry.Metrics;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -54,6 +55,11 @@ public static class ServiceCollectionExtensions
     public static IHostApplicationBuilder ConfigureTelemetry(IHostApplicationBuilder builder, IConfiguration config)
     {
         builder.Services.AddTelemetryOtlp("K1.Atlas.Ecommerce.Api", "1.0.0");
+        
+        // Register sample-specific meters
+        builder.Services.ConfigureOpenTelemetryMeterProvider(metrics => 
+            metrics.AddMeter("K1.Atlas.Ecommerce.Api.Pedidos"));
+        
         builder.Logging.AddTelemetryOtlp();
 
         return builder;

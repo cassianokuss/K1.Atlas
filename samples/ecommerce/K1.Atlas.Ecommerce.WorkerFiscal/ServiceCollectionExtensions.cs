@@ -3,6 +3,7 @@ using K1.Atlas.Ecommerce.WorkerFiscal.Ecommerce;
 using K1.Atlas.Ecommerce.WorkerFiscal.Ecommerce.Commands;
 using K1.Atlas.Ecommerce.WorkerFiscal.Ecommerce.Services;
 using OpenTelemetry.Trace;
+using OpenTelemetry.Metrics;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -54,6 +55,10 @@ public static class ServiceCollectionExtensions
     public static IHostApplicationBuilder ConfigureTelemetry(IHostApplicationBuilder builder, IConfiguration config)
     {
         builder.Services.AddTelemetryOtlp("K1.Atlas.Ecommerce.WorkerFiscal", "1.0.0");
+        
+        // Register sample-specific meters
+        builder.Services.ConfigureOpenTelemetryMeterProvider(metrics => 
+            metrics.AddMeter("K1.Atlas.Ecommerce.WorkerFiscal.NotasFiscais"));
         
         // Configurar AlwaysOnSampler para Workers garantir que todos os traces sejam coletados
         builder.Services.ConfigureOpenTelemetryTracerProvider(tracerBuilder =>

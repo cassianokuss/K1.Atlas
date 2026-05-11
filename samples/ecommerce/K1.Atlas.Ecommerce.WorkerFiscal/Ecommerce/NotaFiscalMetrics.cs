@@ -1,15 +1,15 @@
 using System.Diagnostics.Metrics;
-using K1.Atlas.Telemetry;
 
 namespace K1.Atlas.Ecommerce.WorkerFiscal.Ecommerce;
 
 public class NotaFiscalMetrics
 {
+    private static readonly Meter _meter = new("K1.Atlas.Ecommerce.WorkerFiscal.NotasFiscais", "1.0.0");
     private readonly Counter<long> _notasFiscaisGeradas;
 
     public NotaFiscalMetrics()
     {
-        _notasFiscaisGeradas = MetricsRegistry.WorkerFiscalNotas.CreateCounter<long>(
+        _notasFiscaisGeradas = _meter.CreateCounter<long>(
             "ecommerce.notas_fiscais.geradas",
             unit: "notas",
             description: "Total de notas fiscais geradas");

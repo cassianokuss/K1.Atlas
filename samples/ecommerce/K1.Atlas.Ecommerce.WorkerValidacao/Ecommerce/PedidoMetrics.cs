@@ -1,27 +1,27 @@
 using System.Diagnostics.Metrics;
-using K1.Atlas.Telemetry;
 
 namespace K1.Atlas.Ecommerce.WorkerValidacao.Ecommerce;
 
 public class PedidoMetrics
 {
+    private static readonly Meter _meter = new("K1.Atlas.Ecommerce.WorkerValidacao.Pedidos", "1.0.0");
     private readonly Counter<long> _pedidosCriados;
     private readonly Counter<long> _pedidosAprovados;
     private readonly Counter<long> _pedidosRejeitados;
 
     public PedidoMetrics()
     {
-        _pedidosCriados = MetricsRegistry.WorkerValidacaoPedidos.CreateCounter<long>(
+        _pedidosCriados = _meter.CreateCounter<long>(
             "ecommerce.pedidos.criados",
             unit: "pedidos",
             description: "Total de pedidos criados");
 
-        _pedidosAprovados = MetricsRegistry.WorkerValidacaoPedidos.CreateCounter<long>(
+        _pedidosAprovados = _meter.CreateCounter<long>(
             "ecommerce.pedidos.aprovados",
             unit: "pedidos",
             description: "Total de pedidos aprovados");
 
-        _pedidosRejeitados = MetricsRegistry.WorkerValidacaoPedidos.CreateCounter<long>(
+        _pedidosRejeitados = _meter.CreateCounter<long>(
             "ecommerce.pedidos.rejeitados",
             unit: "pedidos",
             description: "Total de pedidos rejeitados");

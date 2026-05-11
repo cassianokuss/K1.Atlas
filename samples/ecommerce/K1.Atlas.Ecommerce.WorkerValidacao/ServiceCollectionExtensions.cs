@@ -3,6 +3,7 @@ using K1.Atlas.Ecommerce.WorkerValidacao.Ecommerce;
 using K1.Atlas.Ecommerce.WorkerValidacao.Ecommerce.Commands;
 using K1.Atlas.Ecommerce.WorkerValidacao.Ecommerce.Services;
 using OpenTelemetry.Trace;
+using OpenTelemetry.Metrics;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -49,6 +50,10 @@ public static class ServiceCollectionExtensions
     public static IHostApplicationBuilder ConfigureTelemetry(IHostApplicationBuilder builder, IConfiguration config)
     {
         builder.Services.AddTelemetryOtlp("K1.Atlas.Ecommerce.WorkerValidacao", "1.0.0");
+        
+        // Register sample-specific meters
+        builder.Services.ConfigureOpenTelemetryMeterProvider(metrics => 
+            metrics.AddMeter("K1.Atlas.Ecommerce.WorkerValidacao.Pedidos"));
         
         // Configurar AlwaysOnSampler para Workers garantir que todos os traces sejam coletados
         builder.Services.ConfigureOpenTelemetryTracerProvider(tracerBuilder =>
