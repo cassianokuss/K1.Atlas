@@ -9,8 +9,8 @@
     <PackageId>K1.Atlas.PubSub</PackageId>
     <Version>$(Version)</Version>
     <Authors>Arquitetura</Authors>
-    <Company>ACL</Company>
-    <PackageDescription>Acl Standard PubSub</PackageDescription>
+    <Company>K1</Company>
+    <PackageDescription>K1 Standard PubSub</PackageDescription>
     <RepositoryUrl>https://github.com/arortega/K1.Atlas</RepositoryUrl>
   </PropertyGroup>
 

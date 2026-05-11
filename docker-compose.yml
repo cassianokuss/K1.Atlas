@@ -5,7 +5,7 @@ services:
   
   mongodb:
     image: mongo:7.0
-    container_name: acl-mongodb
+    container_name: k1-mongodb
     ports:
       - "27017:27017"
     environment:
@@ -13,7 +13,7 @@ services:
     volumes:
       - mongodb_data:/data/db
     networks:
-      - acl-network
+      - k1-network
     healthcheck:
       test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
       interval: 10s
@@ -22,7 +22,7 @@ services:
 
   rabbitmq:
     image: rabbitmq:3.12-management
-    container_name: acl-rabbitmq
+    container_name: k1-rabbitmq
     hostname: rabbitmq
     ports:
       - "5672:5672"   # AMQP port
@@ -33,7 +33,7 @@ services:
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
     networks:
-      acl-network:
+      k1-network:
         aliases:
           - rabbitmq
     healthcheck:
@@ -48,8 +48,8 @@ services:
   testeapi:
     build:
       context: .
-      dockerfile: teste/K1.Atlas.TesteApi/Dockerfile
-    container_name: acl-testeapi
+      dockerfile: samples/ecommerce/K1.Atlas.Ecommerce.Api/Dockerfile
+    container_name: k1-testeapi
     ports:
       - "5000:8080"
     environment:
@@ -72,13 +72,13 @@ services:
       rabbitmq:
         condition: service_healthy
     networks:
-      - acl-network
+      - k1-network
 
   worker-validacao:
     build:
       context: .
-      dockerfile: teste/K1.Atlas.WorkerValidacao/Dockerfile
-    container_name: acl-worker-validacao
+      dockerfile: samples/ecommerce/K1.Atlas.Ecommerce.WorkerValidacao/Dockerfile
+    container_name: k1-worker-validacao
     environment:
       DOTNET_ENVIRONMENT: Development
       MongoDB__Host: mongodb
@@ -98,13 +98,13 @@ services:
       rabbitmq:
         condition: service_healthy
     networks:
-      - acl-network
+      - k1-network
 
   worker-estoque:
     build:
       context: .
-      dockerfile: teste/K1.Atlas.WorkerEstoque/Dockerfile
-    container_name: acl-worker-estoque
+      dockerfile: samples/ecommerce/K1.Atlas.Ecommerce.WorkerEstoque/Dockerfile
+    container_name: k1-worker-estoque
     environment:
       DOTNET_ENVIRONMENT: Development
       MongoDB__Host: mongodb
@@ -124,13 +124,13 @@ services:
       rabbitmq:
         condition: service_healthy
     networks:
-      - acl-network
+      - k1-network
 
   worker-fiscal:
     build:
       context: .
-      dockerfile: teste/K1.Atlas.WorkerFiscal/Dockerfile
-    container_name: acl-worker-fiscal
+      dockerfile: samples/ecommerce/K1.Atlas.Ecommerce.WorkerFiscal/Dockerfile
+    container_name: k1-worker-fiscal
     environment:
       DOTNET_ENVIRONMENT: Development
       MongoDB__Host: mongodb
@@ -150,10 +150,10 @@ services:
       rabbitmq:
         condition: service_healthy
     networks:
-      - acl-network
+      - k1-network
 
 networks:
-  acl-network:
+  k1-network:
     driver: bridge
 
 volumes:

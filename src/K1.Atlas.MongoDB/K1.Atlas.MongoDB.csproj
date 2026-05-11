@@ -8,8 +8,8 @@
     <PackageId>K1.Atlas.MongoDB</PackageId>
     <Version>$(Version)</Version>
     <Authors>Arquitetura</Authors>
-    <Company>ACL</Company>
-    <PackageDescription>Acl Standard MongoDB</PackageDescription>
+    <Company>K1</Company>
+    <PackageDescription>K1 Standard MongoDB</PackageDescription>
     <RepositoryUrl>https://github.com/arortega/K1.Atlas</RepositoryUrl>
   </PropertyGroup>
 

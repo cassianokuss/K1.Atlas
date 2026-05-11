@@ -23,7 +23,9 @@ namespace Microsoft.Extensions.DependencyInjection
             .ConfigureResource(resource => resource.AddService(serviceName))
             .WithMetrics(metrics => metrics
                 .AddAspNetCoreInstrumentation()
-                .AddMeter("EcommerceMetrics")
+                .AddMeter("K1.Atlas.TesteApi.Pedidos")
+                .AddMeter("K1.Atlas.WorkerValidacao.Pedidos")
+                .AddMeter("K1.Atlas.WorkerFiscal.NotasFiscais")
                 .AddOtlpExporter((exporterOptions, metricReaderOptions) =>
                 {
                     metricReaderOptions.PeriodicExportingMetricReaderOptions.ExportIntervalMilliseconds = 1000;

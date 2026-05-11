@@ -10,13 +10,17 @@
     <Project Path="src/K1.Atlas.PubSub/K1.Atlas.PubSub.csproj" />
     <Project Path="src/K1.Atlas.Telemetry/K1.Atlas.Telemetry.csproj" />
   </Folder>
-  <Folder Name="/teste/">
-    <Project Path="teste/K1.Atlas.IntegrationTest/K1.Atlas.IntegrationTest.csproj" />
-    <Project Path="teste/K1.Atlas.TesteApi/K1.Atlas.TesteApi.csproj" />
-    <Project Path="teste/K1.Atlas.UnitTest/K1.Atlas.UnitTest.csproj" />
-    <Project Path="teste/K1.Atlas.WorkerEstoque/K1.Atlas.WorkerEstoque.csproj" />
-    <Project Path="teste/K1.Atlas.WorkerFiscal/K1.Atlas.WorkerFiscal.csproj" />
-    <Project Path="teste/K1.Atlas.WorkerValidacao/K1.Atlas.WorkerValidacao.csproj" />
+  <Folder Name="/samples/">
+    <Folder Name="/samples/ecommerce/">
+      <Project Path="samples/ecommerce/K1.Atlas.Ecommerce.Api/K1.Atlas.Ecommerce.Api.csproj" />
+      <Project Path="samples/ecommerce/K1.Atlas.Ecommerce.WorkerValidacao/K1.Atlas.Ecommerce.WorkerValidacao.csproj" />
+      <Project Path="samples/ecommerce/K1.Atlas.Ecommerce.WorkerFiscal/K1.Atlas.Ecommerce.WorkerFiscal.csproj" />
+      <Project Path="samples/ecommerce/K1.Atlas.Ecommerce.WorkerEstoque/K1.Atlas.Ecommerce.WorkerEstoque.csproj" />
+    </Folder>
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/K1.Atlas.UnitTest/K1.Atlas.UnitTest.csproj" />
+    <Project Path="tests/K1.Atlas.IntegrationTest/K1.Atlas.IntegrationTest.csproj" />
   </Folder>
   <Project Path="src/K1.Atlas.Domain/K1.Atlas.Domain.csproj" />
   <Project Path="src/K1.Atlas.MongoDB/K1.Atlas.MongoDB.csproj" />

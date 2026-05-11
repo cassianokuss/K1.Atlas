@@ -8,8 +8,8 @@
     <PackageId>K1.Atlas.Telemetry</PackageId>
     <Version>$(Version)</Version>
     <Authors>Arquitetura</Authors>
-    <Company>ACL</Company>
-    <PackageDescription>Acl Standard Telemetry</PackageDescription>
+    <Company>K1</Company>
+    <PackageDescription>K1 Standard Telemetry</PackageDescription>
     <RepositoryUrl>https://github.com/arortega/K1.Atlas</RepositoryUrl>
   </PropertyGroup>
 

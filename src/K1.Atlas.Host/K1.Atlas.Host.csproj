@@ -8,8 +8,8 @@
     <PackageId>K1.Atlas.Host</PackageId>
     <Version>$(Version)</Version>
     <Authors>Arquitetura</Authors>
-    <Company>ACL</Company>
-    <PackageDescription>Acl Standard Host</PackageDescription>
+    <Company>K1</Company>
+    <PackageDescription>K1 Standard Host</PackageDescription>
     <RepositoryUrl>https://github.com/arortega/K1.Atlas</RepositoryUrl>
   </PropertyGroup>
 
