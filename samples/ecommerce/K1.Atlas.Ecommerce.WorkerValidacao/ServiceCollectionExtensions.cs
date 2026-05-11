@@ -38,6 +38,12 @@ public static class ServiceCollectionExtensions
                 cm.AutoMap();
                 cm.SetIdMember(cm.GetMemberMap(c => c.Id));
                 cm.SetIgnoreExtraElements(true);
+            })
+            .RegisterMongoDbCollection<Cliente>("Cliente", cm =>
+            {
+                cm.AutoMap();
+                cm.SetIdMember(cm.GetMemberMap(c => c.Id));
+                cm.SetIgnoreExtraElements(true);
             });
 
         return services;
