@@ -36,16 +36,13 @@ public static class ServiceCollectionExtensions
         services.RegisterMongoDbCollection<NotaFiscal>("NotaFiscal", cm =>
             {
                 cm.AutoMap();
+                cm.SetIdMember(cm.GetMemberMap(c => c.Id));
                 cm.SetIgnoreExtraElements(true);
             })
             .RegisterMongoDbCollection<Pedido>("Pedido", cm =>
             {
                 cm.AutoMap();
-                cm.SetIgnoreExtraElements(true);
-            })
-            .RegisterMongoDbCollection<Cliente>("Cliente", cm =>
-            {
-                cm.AutoMap();
+                cm.SetIdMember(cm.GetMemberMap(c => c.Id));
                 cm.SetIgnoreExtraElements(true);
             });
 

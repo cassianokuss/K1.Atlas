@@ -367,7 +367,9 @@ public class EmitirNotaFiscalHandlerTest
         
         // Required tags: PedidoId, NotaFiscalId, ChaveAcesso, ValorTotal, ICMS, PIS, COFINS, IPI, TentativasEnvio, Status
         Assert.Contains(tags, t => t.Key.Contains("pedido", StringComparison.OrdinalIgnoreCase));
-        Assert.Contains(tags, t => t.Key.Contains("nf", StringComparison.OrdinalIgnoreCase) || t.Key.Contains("notafiscal", StringComparison.OrdinalIgnoreCase));
+        Assert.Contains(tags, t => t.Key.Contains("nf", StringComparison.OrdinalIgnoreCase) 
+            || t.Key.Contains("notafiscal", StringComparison.OrdinalIgnoreCase)
+            || t.Key.Contains("nota_fiscal", StringComparison.OrdinalIgnoreCase));
         
         // Verify telemetry events (retry events)
         var events = activity.Events.ToList();

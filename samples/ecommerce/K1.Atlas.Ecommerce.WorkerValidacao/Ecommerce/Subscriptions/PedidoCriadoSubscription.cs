@@ -22,6 +22,11 @@ public class PedidoCriadoSubscription : IBackgroundConsumer<Pedido>
     {
         try
         {
+            // Add OpenTelemetry tags
+            Activity.Current?.SetTag("PedidoId", obj.Id);
+            Activity.Current?.SetTag("ClienteId", obj.ClienteId);
+            Activity.Current?.SetTag("Action", "ValidarCredito");
+
             // Structured logging - entry 1: Start processing
             _notifier.NotifyInformation(
                 "Iniciando validação de crédito. PedidoId: {PedidoId} NumeroPedido: {NumeroPedido} ClienteId: {ClienteId} ValorTotal: {ValorTotal}",

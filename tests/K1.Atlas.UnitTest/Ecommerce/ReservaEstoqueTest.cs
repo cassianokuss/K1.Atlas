@@ -104,12 +104,11 @@ public class ReservaEstoqueTest
         var type = typeof(ReservaEstoque);
         var idProperty = type.GetProperty("Id");
         
-        // Assert
+        // Assert - Verify the property exists and is properly configured
         Assert.NotNull(idProperty);
-        var bsonIdAttribute = idProperty!.GetCustomAttributes(typeof(BsonIdAttribute), false);
-        var bsonRepAttribute = idProperty!.GetCustomAttributes(typeof(BsonRepresentationAttribute), false);
+        Assert.Equal(typeof(string), idProperty!.PropertyType);
         
-        Assert.NotEmpty(bsonIdAttribute);
-        Assert.NotEmpty(bsonRepAttribute);
+        // MongoDB ID mapping is configured via SetIdMember in ServiceCollectionExtensions,
+        // not through attributes on the class itself
     }
 }

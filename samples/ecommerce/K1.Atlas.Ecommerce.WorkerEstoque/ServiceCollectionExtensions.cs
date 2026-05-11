@@ -28,16 +28,19 @@ public static class ServiceCollectionExtensions
         services.RegisterMongoDbCollection<Pedido>("Pedido", cm =>
             {
                 cm.AutoMap();
+                cm.SetIdMember(cm.GetMemberMap(c => c.Id));
                 cm.SetIgnoreExtraElements(true);
             })
             .RegisterMongoDbCollection<Produto>("Produto", cm =>
             {
                 cm.AutoMap();
+                cm.SetIdMember(cm.GetMemberMap(c => c.Id));
                 cm.SetIgnoreExtraElements(true);
             })
             .RegisterMongoDbCollection<ReservaEstoque>("ReservaEstoque", cm =>
             {
                 cm.AutoMap();
+                cm.SetIdMember(cm.GetMemberMap(c => c.Id));
                 cm.SetIgnoreExtraElements(true);
             });
 
