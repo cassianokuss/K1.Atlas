@@ -76,7 +76,7 @@ public class LiberarEstoqueHandlerTest
         var result = await _handler.HandleAsync(command, CancellationToken.None);
 
         // Assert
-        Assert.True(result);
+        Assert.True(result.IsSuccess);
 
         _reservaEstoqueRepository.Verify(r => r.FirstOrDefaultAsync(
             It.IsAny<Func<IQueryable<ReservaEstoque>, IQueryable<ReservaEstoque>>>(),
@@ -112,7 +112,7 @@ public class LiberarEstoqueHandlerTest
         var result = await _handler.HandleAsync(command, CancellationToken.None);
 
         // Assert
-        Assert.False(result);
+        Assert.False(result.IsSuccess);
 
         _reservaEstoqueRepository.Verify(r => r.FirstOrDefaultAsync(
             It.IsAny<Func<IQueryable<ReservaEstoque>, IQueryable<ReservaEstoque>>>(),
@@ -165,7 +165,7 @@ public class LiberarEstoqueHandlerTest
         var result = await _handler.HandleAsync(command, CancellationToken.None);
 
         // Assert
-        Assert.True(result); // Idempotent - returns true even if already released
+        Assert.True(result.IsSuccess); // Idempotent - returns true even if already released
 
         _reservaEstoqueRepository.Verify(r => r.FirstOrDefaultAsync(
             It.IsAny<Func<IQueryable<ReservaEstoque>, IQueryable<ReservaEstoque>>>(),

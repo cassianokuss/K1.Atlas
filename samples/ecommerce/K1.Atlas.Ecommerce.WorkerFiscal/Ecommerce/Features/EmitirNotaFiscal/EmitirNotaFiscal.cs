@@ -1,4 +1,5 @@
 using K1.Atlas.Domain.Repositories;
+using K1.Atlas.Domain.ResultPattern;
 using K1.Atlas.PubSub.Producer;
 using K1.Atlas.Telemetry.Logging;
 using K1.Atlas.Ecommerce.Contracts.Entities;
@@ -9,13 +10,13 @@ using MediatR;
 
 namespace K1.Atlas.Ecommerce.WorkerFiscal.Ecommerce.Features.EmitirNotaFiscal;
 
-public class EmitirNotaFiscal : IRequest<NotaFiscal>
+public class EmitirNotaFiscal : IRequest<ResultT<NotaFiscal>>
 {
     public string PedidoId { get; set; } = string.Empty;
     public string ReservaId { get; set; } = string.Empty;
 }
 
-public class EmitirNotaFiscalHandler : IRequestHandler<EmitirNotaFiscal, NotaFiscal>
+public class EmitirNotaFiscalHandler : IRequestHandler<EmitirNotaFiscal, ResultT<NotaFiscal>>
 {
     private readonly IRepository<Pedido> _pedidoRepository;
     private readonly IRepository<Cliente> _clienteRepository;
@@ -44,13 +45,21 @@ public class EmitirNotaFiscalHandler : IRequestHandler<EmitirNotaFiscal, NotaFis
         _notaFiscalMetrics = notaFiscalMetrics;
     }
 
-    public async Task<NotaFiscal> HandleAsync(EmitirNotaFiscal request, CancellationToken cancellationToken = default)
+    public async Task<ResultT<NotaFiscal>> HandleAsync(EmitirNotaFiscal request, CancellationToken cancellationToken = default)
     {
         _notifier.NotifyInformation("Iniciando emissão de nota fiscal. {PedidoId} {ReservaId}",
             request.PedidoId, request.ReservaId);
 
-        var pedido = await CarregarPedidoAsync(request.PedidoId, cancellationToken);
-        var cliente = await CarregarClienteAsync(pedido.ClienteId, cancellationToken);
+        var pedidoResult = await CarregarPedidoAsync(request.PedidoId, cancellationToken);
+        if (!pedidoResult.IsSuccess)
+            return pedidoResult.Error!;
+
+        var clienteResult = await CarregarClienteAsync(pedidoResult.Value.ClienteId, cancellationToken);
+        if (!clienteResult.IsSuccess)
+            return clienteResult.Error!;
+
+        var pedido = pedidoResult.Value;
+        var cliente = clienteResult.Value;
 
         var impostos = CalculadoraImpostos.Calcular(pedido.ValorProdutos);
         
@@ -64,28 +73,35 @@ public class EmitirNotaFiscalHandler : IRequestHandler<EmitirNotaFiscal, NotaFis
 
         await _notaFiscalRepository.SaveOrUpdateAsync(notaFiscal, nf => nf.Id == notaFiscal.Id, cancellationToken);
 
-        var (sucesso, protocolo, tentativas) = await _sefazRetryPolicy.ExecutarComRetryAsync(notaFiscal, cancellationToken);
+        var sefazResult = await _sefazRetryPolicy.ExecutarComRetryAsync(notaFiscal, cancellationToken);
 
-        notaFiscal.Status = sucesso ? StatusNotaFiscal.Autorizada : StatusNotaFiscal.Rejeitada;
-        notaFiscal.ProtocoloAutorizacao = protocolo;
-        notaFiscal.TentativasEnvio = tentativas;
-
-        await _notaFiscalRepository.SaveOrUpdateAsync(notaFiscal, nf => nf.Id == notaFiscal.Id, cancellationToken);
-
-        if (sucesso)
+        if (sefazResult.IsSuccess)
         {
-            await PublicarEventosAsync(notaFiscal, protocolo!);
+            notaFiscal.Status = StatusNotaFiscal.Autorizada;
+            notaFiscal.ProtocoloAutorizacao = sefazResult.Value.Protocolo;
+            notaFiscal.TentativasEnvio = sefazResult.Value.Tentativas;
+
+            await _notaFiscalRepository.SaveOrUpdateAsync(notaFiscal, nf => nf.Id == notaFiscal.Id, cancellationToken);
+            await PublicarEventosAsync(notaFiscal, sefazResult.Value.Protocolo);
             
             _notifier.NotifyInformation("Nota fiscal emitida com sucesso. {NumeroNF} {Serie} {Protocolo} {ValorTotal} {Tentativas}",
-                notaFiscal.Numero, notaFiscal.Serie, protocolo, notaFiscal.ValorTotal, tentativas);
+                notaFiscal.Numero, notaFiscal.Serie, sefazResult.Value.Protocolo, notaFiscal.ValorTotal, sefazResult.Value.Tentativas);
 
             _notaFiscalMetrics.IncrementNotaFiscalGerada(ServiceName, notaFiscal.Numero, notaFiscal.ChaveAcesso);
+            
+            return notaFiscal;
         }
-
-        return notaFiscal;
+        else
+        {
+            notaFiscal.Status = StatusNotaFiscal.Rejeitada;
+            notaFiscal.TentativasEnvio = 3; // Max retries
+            await _notaFiscalRepository.SaveOrUpdateAsync(notaFiscal, nf => nf.Id == notaFiscal.Id, cancellationToken);
+            
+            return sefazResult.Error!;
+        }
     }
 
-    private async Task<Pedido> CarregarPedidoAsync(string pedidoId, CancellationToken cancellationToken)
+    private async Task<ResultT<Pedido>> CarregarPedidoAsync(string pedidoId, CancellationToken cancellationToken)
     {
         var pedido = await _pedidoRepository.FirstOrDefaultAsync(
             q => q.Where(p => p.Id == pedidoId),
@@ -94,13 +110,13 @@ public class EmitirNotaFiscalHandler : IRequestHandler<EmitirNotaFiscal, NotaFis
         if (pedido == null)
         {
             _notifier.NotifyError("Pedido não encontrado. {PedidoId}", pedidoId);
-            throw new InvalidOperationException($"Pedido {pedidoId} não encontrado");
+            return Error.NotFound("PEDIDO.NOT_FOUND", $"Pedido {pedidoId} não encontrado");
         }
 
         return pedido;
     }
 
-    private async Task<Cliente> CarregarClienteAsync(string clienteId, CancellationToken cancellationToken)
+    private async Task<ResultT<Cliente>> CarregarClienteAsync(string clienteId, CancellationToken cancellationToken)
     {
         var cliente = await _clienteRepository.FirstOrDefaultAsync(
             q => q.Where(c => c.Nome == clienteId || true),
@@ -109,7 +125,7 @@ public class EmitirNotaFiscalHandler : IRequestHandler<EmitirNotaFiscal, NotaFis
         if (cliente == null)
         {
             _notifier.NotifyError("Cliente não encontrado. {ClienteId}", clienteId);
-            throw new InvalidOperationException($"Cliente {clienteId} não encontrado");
+            return Error.NotFound("CLIENTE.NOT_FOUND", $"Cliente {clienteId} não encontrado");
         }
 
         return cliente;

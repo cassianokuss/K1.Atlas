@@ -87,10 +87,11 @@ public class ValidarCreditoHandlerTest
 
         // Assert
         Assert.NotNull(result);
-        Assert.True(result.Aprovado);
-        Assert.Equal(750, result.ScoreBureau);
-        Assert.Equal(8000m, result.LimiteDisponivel);
-        Assert.Equal(string.Empty, result.MotivoRejeicao);
+        Assert.True(result.IsSuccess);
+        Assert.True(result.Value.Aprovado);
+        Assert.Equal(750, result.Value.ScoreBureau);
+        Assert.Equal(8000m, result.Value.LimiteDisponivel);
+        Assert.Equal(string.Empty, result.Value.MotivoRejeicao);
 
         // Verify pedido was updated to Aprovado
         _pedidoRepository.Verify(r => r.SaveOrUpdateAsync(
@@ -155,10 +156,11 @@ public class ValidarCreditoHandlerTest
 
         // Assert
         Assert.NotNull(result);
-        Assert.False(result.Aprovado);
-        Assert.Equal(650, result.ScoreBureau);
-        Assert.Equal(200m, result.LimiteDisponivel);
-        Assert.NotEmpty(result.MotivoRejeicao);
+        Assert.True(result.IsSuccess);
+        Assert.False(result.Value.Aprovado);
+        Assert.Equal(650, result.Value.ScoreBureau);
+        Assert.Equal(200m, result.Value.LimiteDisponivel);
+        Assert.NotEmpty(result.Value.MotivoRejeicao);
 
         // Verify pedido was updated to Rejeitado
         _pedidoRepository.Verify(r => r.SaveOrUpdateAsync(
@@ -251,7 +253,7 @@ public class ValidarCreditoHandlerTest
         var result = await _handler.HandleAsync(command, CancellationToken.None);
 
         // Assert
-        Assert.InRange(result.ScoreBureau, 300, 850);
+        Assert.InRange(result.Value.ScoreBureau, 300, 850);
     }
 
     [Fact]

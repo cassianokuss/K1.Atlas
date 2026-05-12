@@ -106,11 +106,12 @@ public class ReservarEstoqueHandlerTest
 
         // Assert
         Assert.NotNull(result);
-        Assert.Equal(pedido.Id, result.PedidoId);
-        Assert.Equal(pedido.ClienteId, result.ClienteId);
-        Assert.Equal(2, result.Itens.Count);
-        Assert.Equal(StatusReserva.Ativa, result.Status);
-        Assert.True(result.DataExpiracao > DateTime.UtcNow.AddHours(23));
+        Assert.True(result.IsSuccess);
+        Assert.Equal(pedido.Id, result.Value.PedidoId);
+        Assert.Equal(pedido.ClienteId, result.Value.ClienteId);
+        Assert.Equal(2, result.Value.Itens.Count);
+        Assert.Equal(StatusReserva.Ativa, result.Value.Status);
+        Assert.True(result.Value.DataExpiracao > DateTime.UtcNow.AddHours(23));
 
         _reservaEstoqueRepository.Verify(r => r.SaveOrUpdateAsync(
             It.IsAny<ReservaEstoque>(),

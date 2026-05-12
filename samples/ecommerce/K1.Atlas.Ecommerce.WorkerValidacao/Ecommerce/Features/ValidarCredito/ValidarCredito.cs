@@ -1,4 +1,5 @@
 using K1.Atlas.Domain.Repositories;
+using K1.Atlas.Domain.ResultPattern;
 using K1.Atlas.PubSub.Producer;
 using K1.Atlas.Telemetry.Logging;
 using K1.Atlas.Ecommerce.Contracts.Entities;
@@ -9,12 +10,12 @@ using MediatR;
 
 namespace K1.Atlas.Ecommerce.WorkerValidacao.Ecommerce.Features.ValidarCredito;
 
-public class ValidarCredito : IRequest<ResultadoValidacao>
+public class ValidarCredito : IRequest<ResultT<ResultadoValidacao>>
 {
     public Pedido Pedido { get; set; } = null!;
 }
 
-public class ValidarCreditoHandler : IRequestHandler<ValidarCredito, ResultadoValidacao>
+public class ValidarCreditoHandler : IRequestHandler<ValidarCredito, ResultT<ResultadoValidacao>>
 {
     private readonly IRepository<Cliente> _clienteRepository;
     private readonly IRepository<Pedido> _pedidoRepository;
@@ -40,7 +41,7 @@ public class ValidarCreditoHandler : IRequestHandler<ValidarCredito, ResultadoVa
         _pedidoMetrics = pedidoMetrics;
     }
 
-    public async Task<ResultadoValidacao> HandleAsync(ValidarCredito request, CancellationToken cancellationToken)
+    public async Task<ResultT<ResultadoValidacao>> HandleAsync(ValidarCredito request, CancellationToken cancellationToken)
     {
         var pedido = request.Pedido;
 
@@ -48,7 +49,11 @@ public class ValidarCreditoHandler : IRequestHandler<ValidarCredito, ResultadoVa
             "Iniciando validação de crédito. {NumeroPedido} {ClienteId} {ValorTotal}",
             pedido.NumeroPedido, pedido.ClienteId, pedido.ValorTotal);
 
-        var cliente = await CarregarClienteAsync(pedido, cancellationToken);
+        var clienteResult = await CarregarClienteAsync(pedido, cancellationToken);
+        if (!clienteResult.IsSuccess)
+            return clienteResult.Error!;
+
+        var cliente = clienteResult.Value;
         var scoreBureau = await _bureauService.SimularConsultaAsync(cliente.CpfCnpj, cancellationToken);
 
         _notifier.NotifyInformation(
@@ -73,7 +78,7 @@ public class ValidarCreditoHandler : IRequestHandler<ValidarCredito, ResultadoVa
         return resultado;
     }
 
-    private async Task<Cliente> CarregarClienteAsync(Pedido pedido, CancellationToken cancellationToken)
+    private async Task<ResultT<Cliente>> CarregarClienteAsync(Pedido pedido, CancellationToken cancellationToken)
     {
         var cliente = await _clienteRepository.FirstOrDefaultAsync(
             query => query.Where(c => c.CpfCnpj == pedido.Cliente.CpfCnpj || c.Nome.Contains(pedido.ClienteId)),
@@ -81,7 +86,7 @@ public class ValidarCreditoHandler : IRequestHandler<ValidarCredito, ResultadoVa
 
         if (cliente == null)
         {
-            throw new InvalidOperationException($"Cliente não encontrado: {pedido.ClienteId}");
+            return Error.NotFound("CLIENTE.NOT_FOUND", $"Cliente não encontrado: {pedido.ClienteId}");
         }
 
         return cliente;

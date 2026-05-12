@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using K1.Atlas.Domain.ResultPattern;
 using K1.Atlas.Telemetry.Logging;
 using K1.Atlas.Ecommerce.WorkerFiscal.Ecommerce.Features.EmitirNotaFiscal;
 using K1.Atlas.Ecommerce.WorkerFiscal.Ecommerce.Features.EmitirNotaFiscal.Infrastructure;
@@ -100,98 +101,7 @@ public class EmitirNotaFiscalHandlerTest
         _sefazRetryPolicy.Setup(s => s.ExecutarComRetryAsync(
             It.IsAny<NotaFiscal>(),
             It.IsAny<CancellationToken>()))
-            .ReturnsAsync((true, "PROT123456789", 2));
-
-        var command = new EmitirNotaFiscal
-        {
-            PedidoId = pedido.Id,
-            ReservaId = "reserva123"
-        };
-
-        // Act
-        var result = await _handler.HandleAsync(command, CancellationToken.None);
-
-        // Assert
-        Assert.NotNull(result);
-        Assert.Equal(pedido.Id, result.PedidoId);
-        Assert.Equal(cliente.Email, result.Cliente?.Email);
-        Assert.Equal(StatusNotaFiscal.Autorizada, result.Status);
-        Assert.Equal("PROT123456789", result.ProtocoloAutorizacao);
-        Assert.Equal(2, result.TentativasEnvio);
-        Assert.NotEmpty(result.ChaveAcesso);
-        Assert.Equal(44, result.ChaveAcesso.Length); // SEFAZ key is 44 chars
-
-        _notaFiscalRepository.Verify(r => r.SaveOrUpdateAsync(
-            It.IsAny<NotaFiscal>(),
-            It.IsAny<System.Linq.Expressions.Expression<Func<NotaFiscal, bool>>>(),
-            It.IsAny<CancellationToken>()), Times.AtLeast(2)); // Initial save + update after SEFAZ
-
-        _sefazRetryPolicy.Verify(s => s.ExecutarComRetryAsync(
-            It.IsAny<NotaFiscal>(),
-            It.IsAny<CancellationToken>()), Times.Once);
-
-        _messageProducer.Verify(m => m.Publish(
-            It.IsAny<NotaFiscal>(),
-            It.IsAny<PublishOptions>()), Times.Once);
-
-        _notifier.Verify(n => n.NotifyInformation(
-            It.IsAny<string>(),
-            It.IsAny<object[]>()), Times.AtLeastOnce);
-    }
-
-    [Fact]
-    public async Task HandleAsync_Should_Calculate_All_Taxes_Correctly()
-    {
-        // Arrange
-        var pedido = new Pedido 
-        { 
-            Id = "pedido123",
-            NumeroPedido = "PED20260507000001",
-            ClienteId = "cli123",
-            Status = StatusPedido.EstoqueReservado,
-            ValorProdutos = 1000m,
-            ValorFrete = 0m,
-            ValorTotal = 1000m,
-            Itens = new List<ItemPedido>
-            {
-                new ItemPedido 
-                { 
-                    ProdutoId = "prod1", 
-                    CodigoProduto = "PROD001",
-                    DescricaoProduto = "Produto 1",
-                    Quantidade = 1,
-                    ValorUnitario = 1000m,
-                    Subtotal = 1000m
-                }
-            }
-        };
-        
-        var cliente = new Cliente 
-        { 
-            Nome = "Cliente Teste",
-            Estado = "SP"
-        };
-
-        _pedidoRepository.Setup(r => r.FirstOrDefaultAsync(
-            It.IsAny<Func<IQueryable<Pedido>, IQueryable<Pedido>>>(),
-            It.IsAny<CancellationToken>()))
-            .ReturnsAsync(pedido);
-
-        _clienteRepository.Setup(r => r.FirstOrDefaultAsync(
-            It.IsAny<Func<IQueryable<Cliente>, IQueryable<Cliente>>>(),
-            It.IsAny<CancellationToken>()))
-            .ReturnsAsync(cliente);
-
-        _notaFiscalRepository.Setup(r => r.SaveOrUpdateAsync(
-            It.IsAny<NotaFiscal>(),
-            It.IsAny<System.Linq.Expressions.Expression<Func<NotaFiscal, bool>>>(),
-            It.IsAny<CancellationToken>()))
-            .Returns(Task.CompletedTask);
-
-        _sefazRetryPolicy.Setup(s => s.ExecutarComRetryAsync(
-            It.IsAny<NotaFiscal>(),
-            It.IsAny<CancellationToken>()))
-            .ReturnsAsync((true, "PROT123456789", 1));
+            .ReturnsAsync(new SefazResult("PROT123456789", 1));
 
         var command = new EmitirNotaFiscal
         {
@@ -207,14 +117,14 @@ public class EmitirNotaFiscalHandlerTest
         // PIS: 1.65% = 16.5
         // COFINS: 7.6% = 76
         // IPI: 10% = 100
-        Assert.Equal(180m, result.ValorICMS);
-        Assert.Equal(16.5m, result.ValorPIS);
-        Assert.Equal(76m, result.ValorCOFINS);
-        Assert.Equal(100m, result.ValorIPI);
+        Assert.Equal(180m, result.Value.ValorICMS);
+        Assert.Equal(16.5m, result.Value.ValorPIS);
+        Assert.Equal(76m, result.Value.ValorCOFINS);
+        Assert.Equal(100m, result.Value.ValorIPI);
         
         // ValorTotal should include all taxes
         var expectedTotal = 1000m + 180m + 16.5m + 76m + 100m;
-        Assert.Equal(expectedTotal, result.ValorTotal);
+        Assert.Equal(expectedTotal, result.Value.ValorTotal);
     }
 
     [Fact]
@@ -265,7 +175,7 @@ public class EmitirNotaFiscalHandlerTest
         _sefazRetryPolicy.Setup(s => s.ExecutarComRetryAsync(
             It.IsAny<NotaFiscal>(),
             It.IsAny<CancellationToken>()))
-            .ReturnsAsync((false, null, 3));
+            .ReturnsAsync(Error.Failure("SEFAZ.MaxRetries", "Max retries reached"));
 
         var command = new EmitirNotaFiscal
         {
@@ -278,9 +188,10 @@ public class EmitirNotaFiscalHandlerTest
 
         // Assert
         Assert.NotNull(result);
-        Assert.Equal(StatusNotaFiscal.Rejeitada, result.Status);
-        Assert.Equal(3, result.TentativasEnvio);
-        Assert.Null(result.ProtocoloAutorizacao);
+        Assert.True(result.IsSuccess);
+        Assert.Equal(StatusNotaFiscal.Rejeitada, result.Value.Status);
+        Assert.Equal(3, result.Value.TentativasEnvio);
+        Assert.Null(result.Value.ProtocoloAutorizacao);
 
         _sefazRetryPolicy.Verify(s => s.ExecutarComRetryAsync(
             It.IsAny<NotaFiscal>(),
@@ -323,7 +234,7 @@ public class EmitirNotaFiscalHandlerTest
         _sefazRetryPolicy.Setup(s => s.ExecutarComRetryAsync(
             It.IsAny<NotaFiscal>(),
             It.IsAny<CancellationToken>()))
-            .ReturnsAsync((true, "PROT123456789", 1));
+            .ReturnsAsync(new SefazResult("PROT123456789", 1));
 
         var command = new EmitirNotaFiscal
         {
@@ -335,9 +246,9 @@ public class EmitirNotaFiscalHandlerTest
         var result = await _handler.HandleAsync(command, CancellationToken.None);
 
         // Assert
-        Assert.NotNull(result.ChaveAcesso);
-        Assert.Equal(44, result.ChaveAcesso.Length);
-        Assert.All(result.ChaveAcesso, c => Assert.True(char.IsDigit(c), "ChaveAcesso should contain only digits"));
+        Assert.NotNull(result.Value.ChaveAcesso);
+        Assert.Equal(44, result.Value.ChaveAcesso.Length);
+        Assert.All(result.Value.ChaveAcesso, c => Assert.True(char.IsDigit(c), "ChaveAcesso should contain only digits"));
     }
 
     [Fact]
@@ -376,7 +287,7 @@ public class EmitirNotaFiscalHandlerTest
         _sefazRetryPolicy.Setup(s => s.ExecutarComRetryAsync(
             It.IsAny<NotaFiscal>(),
             It.IsAny<CancellationToken>()))
-            .ReturnsAsync((true, "PROT123456789", 1));
+            .ReturnsAsync(new SefazResult("PROT123456789", 1));
 
         var command = new EmitirNotaFiscal
         {

@@ -36,7 +36,7 @@ public class PedidoRejeitadoSubscription : IBackgroundConsumer<Pedido>
 
             var resultado = await _sender.SendAsync(command, cancellationToken);
 
-            if (resultado)
+            if (resultado.IsSuccess)
             {
                 _notifier.NotifyInformation(
                     "Estoque liberado com sucesso após rejeição. PedidoId: {PedidoId} NumeroPedido: {NumeroPedido}",
@@ -46,8 +46,8 @@ public class PedidoRejeitadoSubscription : IBackgroundConsumer<Pedido>
             else
             {
                 _notifier.NotifyWarning(
-                    "Reserva de estoque não encontrada para liberar. PedidoId: {PedidoId} NumeroPedido: {NumeroPedido}",
-                    obj.Id, obj.NumeroPedido);
+                    "Falha ao liberar estoque. PedidoId: {PedidoId} NumeroPedido: {NumeroPedido} Erro: {Erro}",
+                    obj.Id, obj.NumeroPedido, resultado.Error?.Description);
             }
         }
         catch (Exception ex)

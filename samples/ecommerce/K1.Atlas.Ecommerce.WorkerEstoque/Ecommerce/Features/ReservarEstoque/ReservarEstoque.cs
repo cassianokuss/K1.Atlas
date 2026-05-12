@@ -1,4 +1,5 @@
 using K1.Atlas.Domain.Repositories;
+using K1.Atlas.Domain.ResultPattern;
 using K1.Atlas.PubSub.Producer;
 using K1.Atlas.Telemetry.Logging;
 using K1.Atlas.Ecommerce.Contracts.Entities;
@@ -7,13 +8,13 @@ using MediatR;
 
 namespace K1.Atlas.Ecommerce.WorkerEstoque.Ecommerce.Features.ReservarEstoque;
 
-public class ReservarEstoque : IRequest<ReservaEstoque>
+public class ReservarEstoque : IRequest<ResultT<ReservaEstoque>>
 {
     public Pedido Pedido { get; set; } = null!;
     public string PedidoId { get; set; } = string.Empty;
 }
 
-public class ReservarEstoqueHandler : IRequestHandler<ReservarEstoque, ReservaEstoque>
+public class ReservarEstoqueHandler : IRequestHandler<ReservarEstoque, ResultT<ReservaEstoque>>
 {
     private readonly IRepository<Produto> _produtoRepository;
     private readonly IRepository<ReservaEstoque> _reservaEstoqueRepository;
@@ -32,7 +33,7 @@ public class ReservarEstoqueHandler : IRequestHandler<ReservarEstoque, ReservaEs
         _notifier = notifier;
     }
 
-    public async Task<ReservaEstoque> HandleAsync(ReservarEstoque request, CancellationToken cancellationToken = default)
+    public async Task<ResultT<ReservaEstoque>> HandleAsync(ReservarEstoque request, CancellationToken cancellationToken = default)
     {
         var pedido = request.Pedido;
         
@@ -48,14 +49,19 @@ public class ReservarEstoqueHandler : IRequestHandler<ReservarEstoque, ReservaEs
                 builder => builder.Where(p => p.Id == item.ProdutoId),
                 cancellationToken);
 
-            ValidadorEstoque.ValidarProdutoExiste(produto, item.ProdutoId);
-            ValidadorEstoque.ValidarDisponibilidade(produto!, item.Quantidade);
+            var produtoResult = ValidadorEstoque.ValidarProdutoExiste(produto, item.ProdutoId);
+            if (!produtoResult.IsSuccess)
+                return produtoResult.Error!;
 
-            itensValidados.Add((produto!, item.Quantidade));
+            var disponibilidadeResult = ValidadorEstoque.ValidarDisponibilidade(produtoResult.Value, item.Quantidade);
+            if (!disponibilidadeResult.IsSuccess)
+                return disponibilidadeResult.Error!;
+
+            itensValidados.Add((produtoResult.Value, item.Quantidade));
             
             _notifier.NotifyInformation(
                 "Produto validado. {ProdutoCodigo} {QuantidadeRequerida} {QuantidadeDisponivel}",
-                produto!.Codigo, item.Quantidade, produto.EstoqueDisponivel);
+                produtoResult.Value.Codigo, item.Quantidade, produtoResult.Value.EstoqueDisponivel);
         }
 
         var reserva = CriadorReserva.Criar(pedido, itensValidados);

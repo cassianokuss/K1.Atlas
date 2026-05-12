@@ -1,13 +1,16 @@
 using System.Diagnostics;
+using K1.Atlas.Domain.ResultPattern;
 using K1.Atlas.Ecommerce.Contracts.Entities;
 using K1.Atlas.Ecommerce.WorkerFiscal.Ecommerce.Services;
 using K1.Atlas.Telemetry.Logging;
 
 namespace K1.Atlas.Ecommerce.WorkerFiscal.Ecommerce.Features.EmitirNotaFiscal.Infrastructure;
 
+public record SefazResult(string Protocolo, int Tentativas);
+
 public interface ISefazRetryPolicy
 {
-    Task<(bool Sucesso, string? Protocolo, int Tentativas)> ExecutarComRetryAsync(
+    Task<ResultT<SefazResult>> ExecutarComRetryAsync(
         NotaFiscal notaFiscal,
         CancellationToken cancellationToken);
 }
@@ -24,15 +27,15 @@ public class SefazRetryPolicy : ISefazRetryPolicy
         _notifier = notifier;
     }
 
-    public async Task<(bool Sucesso, string? Protocolo, int Tentativas)> ExecutarComRetryAsync(
+    public async Task<ResultT<SefazResult>> ExecutarComRetryAsync(
         NotaFiscal notaFiscal,
         CancellationToken cancellationToken)
     {
-        bool sucesso = false;
         string? protocolo = null;
         int tentativa = 0;
+        Exception? lastException = null;
 
-        while (tentativa < MaxRetryAttempts && !sucesso)
+        while (tentativa < MaxRetryAttempts)
         {
             tentativa++;
             notaFiscal.TentativasEnvio = tentativa;
@@ -40,14 +43,17 @@ public class SefazRetryPolicy : ISefazRetryPolicy
             try
             {
                 protocolo = await _sefazService.EnviarNotaAsync(notaFiscal, cancellationToken);
-                sucesso = true;
 
                 _notifier.NotifyInformation(
                     "SEFAZ respondeu com sucesso na tentativa {Tentativa}. {NumeroNF} {Protocolo}",
                     tentativa, notaFiscal.Numero, protocolo);
+
+                return new SefazResult(protocolo, tentativa);
             }
             catch (HttpRequestException ex)
             {
+                lastException = ex;
+                
                 _notifier.NotifyWarning(
                     "Tentativa {Tentativa} de envio SEFAZ falhou. {NumeroNF} {Erro}",
                     tentativa, notaFiscal.Numero, ex.Message);
@@ -65,15 +71,15 @@ public class SefazRetryPolicy : ISefazRetryPolicy
                     var delayMs = (int)(2000 * Math.Pow(2, tentativa - 1)); // 2s, 4s, 8s
                     await Task.Delay(delayMs, cancellationToken);
                 }
-                else
-                {
-                    _notifier.NotifyError(
-                        "Falha definitiva ao enviar nota fiscal após {Tentativas} tentativas. {NumeroNF}",
-                        MaxRetryAttempts, notaFiscal.Numero);
-                }
             }
         }
 
-        return (sucesso, protocolo, tentativa);
+        _notifier.NotifyError(
+            "Falha definitiva ao enviar nota fiscal após {Tentativas} tentativas. {NumeroNF}",
+            MaxRetryAttempts, notaFiscal.Numero);
+
+        return Error.Failure(
+            "SEFAZ.RETRY_FAILED",
+            $"Falha ao enviar nota fiscal após {MaxRetryAttempts} tentativas: {lastException?.Message}");
     }
 }
