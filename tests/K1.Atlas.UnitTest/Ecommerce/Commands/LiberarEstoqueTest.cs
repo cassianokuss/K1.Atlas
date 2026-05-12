@@ -1,4 +1,5 @@
 using K1.Atlas.Ecommerce.WorkerEstoque.Features.LiberarEstoque;
+using K1.Atlas.Domain.ResultPattern;
 using MediatR;
 using Xunit;
 
@@ -19,11 +20,11 @@ public class LiberarEstoqueTest
     }
 
     [Fact]
-    public void Command_Should_Implement_IRequest_Of_Bool()
+    public void Command_Should_Implement_IRequest_Of_Result()
     {
         var command = new LiberarEstoque();
 
-        Assert.IsAssignableFrom<IRequest<bool>>(command);
+        Assert.IsAssignableFrom<IRequest<Result>>(command);
     }
 
     [Fact]

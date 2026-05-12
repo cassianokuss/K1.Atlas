@@ -1,5 +1,6 @@
 using K1.Atlas.Ecommerce.WorkerFiscal.Features.EmitirNotaFiscal;
 using K1.Atlas.Ecommerce.Contracts.Entities;
+using K1.Atlas.Domain.ResultPattern;
 using MediatR;
 using Xunit;
 
@@ -30,11 +31,11 @@ public class EmitirNotaFiscalTest
     }
 
     [Fact]
-    public void Command_Should_Implement_IRequest_Of_NotaFiscal()
+    public void Command_Should_Implement_IRequest_Of_ResultT_NotaFiscal()
     {
         var command = new EmitirNotaFiscal();
 
-        Assert.IsAssignableFrom<IRequest<NotaFiscal>>(command);
+        Assert.IsAssignableFrom<IRequest<ResultT<NotaFiscal>>>(command);
     }
 
     [Fact]

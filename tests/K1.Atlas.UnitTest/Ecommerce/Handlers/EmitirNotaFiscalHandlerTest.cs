@@ -188,10 +188,9 @@ public class EmitirNotaFiscalHandlerTest
 
         // Assert
         Assert.NotNull(result);
-        Assert.True(result.IsSuccess);
-        Assert.Equal(StatusNotaFiscal.Rejeitada, result.Value.Status);
-        Assert.Equal(3, result.Value.TentativasEnvio);
-        Assert.Null(result.Value.ProtocoloAutorizacao);
+        Assert.False(result.IsSuccess);
+        Assert.Equal(ErrorType.Failure, result.Error!.ErrorType);
+        Assert.Equal("SEFAZ.MaxRetries", result.Error.Code);
 
         _sefazRetryPolicy.Verify(s => s.ExecutarComRetryAsync(
             It.IsAny<NotaFiscal>(),

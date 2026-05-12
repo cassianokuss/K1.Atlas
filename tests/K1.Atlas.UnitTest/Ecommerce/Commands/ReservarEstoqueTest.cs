@@ -1,5 +1,6 @@
 using K1.Atlas.Ecommerce.WorkerEstoque.Features.ReservarEstoque;
 using K1.Atlas.Ecommerce.Contracts.Entities;
+using K1.Atlas.Domain.ResultPattern;
 using MediatR;
 using Xunit;
 
@@ -28,11 +29,11 @@ public class ReservarEstoqueTest
     }
 
     [Fact]
-    public void Command_Should_Implement_IRequest_Of_ReservaEstoque()
+    public void Command_Should_Implement_IRequest_Of_ResultT_ReservaEstoque()
     {
         var command = new ReservarEstoque();
 
-        Assert.IsAssignableFrom<IRequest<ReservaEstoque>>(command);
+        Assert.IsAssignableFrom<IRequest<ResultT<ReservaEstoque>>>(command);
     }
 
     [Fact]

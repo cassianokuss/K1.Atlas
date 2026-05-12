@@ -1,6 +1,7 @@
 using K1.Atlas.Ecommerce.WorkerValidacao.Features.ValidarCredito;
 using K1.Atlas.Ecommerce.Contracts.Entities;
 using K1.Atlas.Ecommerce.Contracts.ValueObjects;
+using K1.Atlas.Domain.ResultPattern;
 using MediatR;
 using Xunit;
 
@@ -31,11 +32,11 @@ public class ValidarCreditoTest
     }
 
     [Fact]
-    public void Command_Should_Implement_IRequest_Of_ResultadoValidacao()
+    public void Command_Should_Implement_IRequest_Of_ResultT_ResultadoValidacao()
     {
         var command = new ValidarCredito();
 
-        Assert.IsAssignableFrom<IRequest<ResultadoValidacao>>(command);
+        Assert.IsAssignableFrom<IRequest<ResultT<ResultadoValidacao>>>(command);
     }
 
     [Fact]

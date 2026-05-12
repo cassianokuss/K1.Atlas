@@ -5,6 +5,7 @@ using K1.Atlas.Ecommerce.WorkerEstoque.Features.ReservarEstoque;
 using K1.Atlas.Ecommerce.WorkerEstoque.Exceptions;
 using K1.Atlas.Ecommerce.Contracts.Entities;
 using K1.Atlas.Domain.Repositories;
+using K1.Atlas.Domain.ResultPattern;
 using K1.Atlas.PubSub.Producer;
 using Moq;
 using Xunit;
@@ -167,13 +168,16 @@ public class ReservarEstoqueHandlerTest
             PedidoId = pedido.Id
         };
 
-        // Act & Assert
-        var exception = await Assert.ThrowsAsync<EstoqueInsuficienteException>(
-            () => _handler.HandleAsync(command, CancellationToken.None));
+        // Act
+        var result = await _handler.HandleAsync(command, CancellationToken.None);
 
-        Assert.Equal("PROD001", exception.ProdutoCodigo);
-        Assert.Equal(20, exception.QuantidadeRequerida);
-        Assert.Equal(5, exception.QuantidadeDisponivel);
+        // Assert
+        Assert.False(result.IsSuccess);
+        Assert.Equal(ErrorType.Validation, result.Error!.ErrorType);
+        Assert.Equal("ESTOQUE.INSUFICIENTE", result.Error.Code);
+        Assert.Contains("PROD001", result.Error.Description);
+        Assert.Contains("20", result.Error.Description);
+        Assert.Contains("5", result.Error.Description);
     }
 
     [Fact]
@@ -207,10 +211,13 @@ public class ReservarEstoqueHandlerTest
             PedidoId = pedido.Id
         };
 
-        // Act & Assert
-        var exception = await Assert.ThrowsAsync<ProdutoNaoEncontradoException>(
-            () => _handler.HandleAsync(command, CancellationToken.None));
+        // Act
+        var result = await _handler.HandleAsync(command, CancellationToken.None);
 
-        Assert.Equal("prod999", exception.ProdutoId);
+        // Assert
+        Assert.False(result.IsSuccess);
+        Assert.Equal(ErrorType.NotFound, result.Error!.ErrorType);
+        Assert.Equal("PRODUTO.NOT_FOUND", result.Error.Code);
+        Assert.Contains("prod999", result.Error.Description);
     }
 }

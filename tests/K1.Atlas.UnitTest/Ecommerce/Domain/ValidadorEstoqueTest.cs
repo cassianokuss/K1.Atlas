@@ -1,6 +1,7 @@
 using K1.Atlas.Ecommerce.WorkerEstoque.Features.ReservarEstoque.Domain;
 using K1.Atlas.Ecommerce.WorkerEstoque.Exceptions;
 using K1.Atlas.Ecommerce.Contracts.Entities;
+using K1.Atlas.Domain.ResultPattern;
 using Xunit;
 
 namespace K1.Atlas.UnitTest.Ecommerce.Domain;
@@ -21,8 +22,11 @@ public class ValidadorEstoqueTest
         };
         int quantidadeSolicitada = 5;
 
-        // Act & Assert - should not throw
-        ValidadorEstoque.ValidarDisponibilidade(produto, quantidadeSolicitada);
+        // Act
+        var result = ValidadorEstoque.ValidarDisponibilidade(produto, quantidadeSolicitada);
+        
+        // Assert
+        Assert.True(result.IsSuccess);
     }
 
     [Fact]
@@ -39,12 +43,15 @@ public class ValidadorEstoqueTest
         };
         int quantidadeSolicitada = 5;
 
-        // Act & Assert - should not throw
-        ValidadorEstoque.ValidarDisponibilidade(produto, quantidadeSolicitada);
+        // Act
+        var result = ValidadorEstoque.ValidarDisponibilidade(produto, quantidadeSolicitada);
+        
+        // Assert
+        Assert.True(result.IsSuccess);
     }
 
     [Fact]
-    public void ValidarDisponibilidade_ComEstoqueInsuficiente_DeveLancarExcecao()
+    public void ValidarDisponibilidade_ComEstoqueInsuficiente_DeveRetornarErro()
     {
         // Arrange
         var produto = new Produto
@@ -57,17 +64,20 @@ public class ValidadorEstoqueTest
         };
         int quantidadeSolicitada = 5;
 
-        // Act & Assert
-        var exception = Assert.Throws<EstoqueInsuficienteException>(() =>
-            ValidadorEstoque.ValidarDisponibilidade(produto, quantidadeSolicitada));
+        // Act
+        var result = ValidadorEstoque.ValidarDisponibilidade(produto, quantidadeSolicitada);
         
-        Assert.Equal("COD1", exception.ProdutoCodigo);
-        Assert.Equal(5, exception.QuantidadeRequerida);
-        Assert.Equal(3, exception.QuantidadeDisponivel);
+        // Assert
+        Assert.False(result.IsSuccess);
+        Assert.Equal(ErrorType.Validation, result.Error!.ErrorType);
+        Assert.Equal("ESTOQUE.INSUFICIENTE", result.Error.Code);
+        Assert.Contains("COD1", result.Error.Description);
+        Assert.Contains("5", result.Error.Description);
+        Assert.Contains("3", result.Error.Description);
     }
 
     [Fact]
-    public void ValidarDisponibilidade_ComEstoqueZero_DeveLancarExcecao()
+    public void ValidarDisponibilidade_ComEstoqueZero_DeveRetornarErro()
     {
         // Arrange
         var produto = new Produto
@@ -80,17 +90,20 @@ public class ValidadorEstoqueTest
         };
         int quantidadeSolicitada = 1;
 
-        // Act & Assert
-        var exception = Assert.Throws<EstoqueInsuficienteException>(() =>
-            ValidadorEstoque.ValidarDisponibilidade(produto, quantidadeSolicitada));
+        // Act
+        var result = ValidadorEstoque.ValidarDisponibilidade(produto, quantidadeSolicitada);
         
-        Assert.Equal("COD1", exception.ProdutoCodigo);
-        Assert.Equal(1, exception.QuantidadeRequerida);
-        Assert.Equal(0, exception.QuantidadeDisponivel);
+        // Assert
+        Assert.False(result.IsSuccess);
+        Assert.Equal(ErrorType.Validation, result.Error!.ErrorType);
+        Assert.Equal("ESTOQUE.INSUFICIENTE", result.Error.Code);
+        Assert.Contains("COD1", result.Error.Description);
+        Assert.Contains("1", result.Error.Description);
+        Assert.Contains("0", result.Error.Description);
     }
 
     [Fact]
-    public void ValidarProdutoExiste_ComProdutoValido_DevePassar()
+    public void ValidarProdutoExiste_ComProdutoValido_DeveRetornarProduto()
     {
         // Arrange
         var produto = new Produto
@@ -100,21 +113,29 @@ public class ValidadorEstoqueTest
             Descricao = "Produto Teste"
         };
 
-        // Act & Assert - should not throw
-        ValidadorEstoque.ValidarProdutoExiste(produto, "PROD1");
+        // Act
+        var result = ValidadorEstoque.ValidarProdutoExiste(produto, "PROD1");
+        
+        // Assert
+        Assert.True(result.IsSuccess);
+        Assert.NotNull(result.Value);
+        Assert.Equal("PROD1", result.Value.Id);
     }
 
     [Fact]
-    public void ValidarProdutoExiste_ComProdutoNulo_DeveLancarExcecao()
+    public void ValidarProdutoExiste_ComProdutoNulo_DeveRetornarErro()
     {
         // Arrange
         Produto? produto = null;
         string produtoId = "PROD1";
 
-        // Act & Assert
-        var exception = Assert.Throws<ProdutoNaoEncontradoException>(() =>
-            ValidadorEstoque.ValidarProdutoExiste(produto, produtoId));
+        // Act
+        var result = ValidadorEstoque.ValidarProdutoExiste(produto, produtoId);
         
-        Assert.Equal("PROD1", exception.ProdutoId);
+        // Assert
+        Assert.False(result.IsSuccess);
+        Assert.Equal(ErrorType.NotFound, result.Error!.ErrorType);
+        Assert.Equal("PRODUTO.NOT_FOUND", result.Error.Code);
+        Assert.Contains("PROD1", result.Error.Description);
     }
 }
