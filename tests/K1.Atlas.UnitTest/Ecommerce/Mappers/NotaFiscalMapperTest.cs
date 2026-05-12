@@ -1,5 +1,5 @@
-using K1.Atlas.Ecommerce.WorkerFiscal.Ecommerce.Features.EmitirNotaFiscal.Mappers;
-using K1.Atlas.Ecommerce.WorkerFiscal.Ecommerce.Features.EmitirNotaFiscal.Domain;
+using K1.Atlas.Ecommerce.WorkerFiscal.Features.EmitirNotaFiscal.Mappers;
+using K1.Atlas.Ecommerce.WorkerFiscal.Features.EmitirNotaFiscal.Domain;
 using K1.Atlas.Ecommerce.Contracts.Entities;
 using Xunit;
 

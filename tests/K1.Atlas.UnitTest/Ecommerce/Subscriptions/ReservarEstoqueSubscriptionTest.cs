@@ -1,5 +1,5 @@
-using K1.Atlas.Ecommerce.WorkerEstoque.Ecommerce;
-using K1.Atlas.Ecommerce.WorkerEstoque.Ecommerce.Features.ReservarEstoque;
+using K1.Atlas.Ecommerce.WorkerEstoque;
+using K1.Atlas.Ecommerce.WorkerEstoque.Features.ReservarEstoque;
 using K1.Atlas.Ecommerce.Contracts.Entities;
 using K1.Atlas.PubSub.Consumer;
 using MediatR;

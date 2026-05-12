@@ -1,4 +1,4 @@
-using K1.Atlas.Ecommerce.WorkerFiscal.Ecommerce;
+using K1.Atlas.Ecommerce.WorkerFiscal;
 using K1.Atlas.Ecommerce.Contracts.Entities;
 using Xunit;
 

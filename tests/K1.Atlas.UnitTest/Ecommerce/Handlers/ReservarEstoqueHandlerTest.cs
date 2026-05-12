@@ -1,8 +1,8 @@
 using System.Diagnostics;
 using K1.Atlas.Telemetry.Logging;
-using K1.Atlas.Ecommerce.WorkerEstoque.Ecommerce;
-using K1.Atlas.Ecommerce.WorkerEstoque.Ecommerce.Features.ReservarEstoque;
-using K1.Atlas.Ecommerce.WorkerEstoque.Ecommerce.Exceptions;
+using K1.Atlas.Ecommerce.WorkerEstoque;
+using K1.Atlas.Ecommerce.WorkerEstoque.Features.ReservarEstoque;
+using K1.Atlas.Ecommerce.WorkerEstoque.Exceptions;
 using K1.Atlas.Ecommerce.Contracts.Entities;
 using K1.Atlas.Domain.Repositories;
 using K1.Atlas.PubSub.Producer;

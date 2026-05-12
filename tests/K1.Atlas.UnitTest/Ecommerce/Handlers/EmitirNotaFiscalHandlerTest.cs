@@ -1,9 +1,9 @@
 using System.Diagnostics;
 using K1.Atlas.Domain.ResultPattern;
 using K1.Atlas.Telemetry.Logging;
-using K1.Atlas.Ecommerce.WorkerFiscal.Ecommerce.Features.EmitirNotaFiscal;
-using K1.Atlas.Ecommerce.WorkerFiscal.Ecommerce.Features.EmitirNotaFiscal.Infrastructure;
-using K1.Atlas.Ecommerce.WorkerFiscal.Ecommerce;
+using K1.Atlas.Ecommerce.WorkerFiscal.Features.EmitirNotaFiscal;
+using K1.Atlas.Ecommerce.WorkerFiscal.Features.EmitirNotaFiscal.Infrastructure;
+using K1.Atlas.Ecommerce.WorkerFiscal;
 using K1.Atlas.Ecommerce.Contracts.Entities;
 using K1.Atlas.Domain.Repositories;
 using K1.Atlas.PubSub.Producer;

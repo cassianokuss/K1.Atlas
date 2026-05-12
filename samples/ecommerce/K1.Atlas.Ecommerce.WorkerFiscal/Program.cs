@@ -1,6 +1,6 @@
-using K1.Atlas.Ecommerce.WorkerFiscal.Ecommerce;
+using K1.Atlas.Ecommerce.WorkerFiscal;
 using K1.Atlas.Ecommerce.Contracts.Entities;
-using K1.Atlas.Ecommerce.WorkerFiscal.Ecommerce.Features.EmitirNotaFiscal.Infrastructure;
+using K1.Atlas.Ecommerce.WorkerFiscal.Features.EmitirNotaFiscal.Infrastructure;
 using FluentValidation;
 
 var builder = Host.CreateApplicationBuilder(args);

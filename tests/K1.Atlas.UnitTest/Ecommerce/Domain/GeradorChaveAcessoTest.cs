@@ -1,4 +1,4 @@
-using K1.Atlas.Ecommerce.WorkerFiscal.Ecommerce.Features.EmitirNotaFiscal.Domain;
+using K1.Atlas.Ecommerce.WorkerFiscal.Features.EmitirNotaFiscal.Domain;
 using Xunit;
 
 namespace K1.Atlas.UnitTest.Ecommerce.Domain;

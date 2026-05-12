@@ -1,8 +1,8 @@
 using K1.Atlas.Telemetry.Logging;
-using K1.Atlas.Ecommerce.WorkerFiscal.Ecommerce;
+using K1.Atlas.Ecommerce.WorkerFiscal;
 using K1.Atlas.Ecommerce.Contracts.Entities;
-using K1.Atlas.Ecommerce.WorkerFiscal.Ecommerce.Features.EmitirNotaFiscal;
-using K1.Atlas.Ecommerce.WorkerFiscal.Ecommerce.Services;
+using K1.Atlas.Ecommerce.WorkerFiscal.Features.EmitirNotaFiscal;
+using K1.Atlas.Ecommerce.WorkerFiscal.Services;
 using OpenTelemetry.Trace;
 using OpenTelemetry.Metrics;
 

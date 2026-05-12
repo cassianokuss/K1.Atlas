@@ -1,4 +1,4 @@
-using K1.Atlas.Ecommerce.WorkerValidacao.Ecommerce.Features.ValidarCredito.Domain;
+using K1.Atlas.Ecommerce.WorkerValidacao.Features.ValidarCredito.Domain;
 using K1.Atlas.Ecommerce.Contracts.Entities;
 using Xunit;
 

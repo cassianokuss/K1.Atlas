@@ -1,5 +1,5 @@
-using K1.Atlas.Ecommerce.WorkerValidacao.Ecommerce;
-using K1.Atlas.Ecommerce.WorkerValidacao.Ecommerce.Features.ValidarCredito;
+using K1.Atlas.Ecommerce.WorkerValidacao;
+using K1.Atlas.Ecommerce.WorkerValidacao.Features.ValidarCredito;
 using K1.Atlas.Ecommerce.Contracts.Entities;
 using K1.Atlas.Ecommerce.Contracts.ValueObjects;
 using K1.Atlas.PubSub.Consumer;

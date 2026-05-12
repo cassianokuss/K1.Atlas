@@ -13,7 +13,7 @@ public class EstoqueExceptionTest
         var quantidadeDisponivel = 5;
 
         // Act
-        var exception = new K1.Atlas.Ecommerce.WorkerEstoque.Ecommerce.Exceptions.EstoqueInsuficienteException(
+        var exception = new K1.Atlas.Ecommerce.WorkerEstoque.Exceptions.EstoqueInsuficienteException(
             produtoCodigo, 
             quantidadeRequerida, 
             quantidadeDisponivel);
@@ -32,7 +32,7 @@ public class EstoqueExceptionTest
     public void EstoqueInsuficienteException_Should_Derive_From_Exception()
     {
         // Arrange
-        var exception = new K1.Atlas.Ecommerce.WorkerEstoque.Ecommerce.Exceptions.EstoqueInsuficienteException(
+        var exception = new K1.Atlas.Ecommerce.WorkerEstoque.Exceptions.EstoqueInsuficienteException(
             "PROD-001", 
             10, 
             5);
@@ -49,7 +49,7 @@ public class EstoqueExceptionTest
         var customMessage = "Produto não encontrado no estoque";
 
         // Act
-        var exception = new K1.Atlas.Ecommerce.WorkerEstoque.Ecommerce.Exceptions.ProdutoNaoEncontradoException(
+        var exception = new K1.Atlas.Ecommerce.WorkerEstoque.Exceptions.ProdutoNaoEncontradoException(
             produtoId, 
             customMessage);
 
@@ -64,7 +64,7 @@ public class EstoqueExceptionTest
     public void ProdutoNaoEncontradoException_Should_Derive_From_Exception()
     {
         // Arrange
-        var exception = new K1.Atlas.Ecommerce.WorkerEstoque.Ecommerce.Exceptions.ProdutoNaoEncontradoException(
+        var exception = new K1.Atlas.Ecommerce.WorkerEstoque.Exceptions.ProdutoNaoEncontradoException(
             "507f1f77bcf86cd799439011", 
             "Produto não encontrado");
 
@@ -79,7 +79,7 @@ public class EstoqueExceptionTest
         var produtoId = "507f1f77bcf86cd799439011";
 
         // Act
-        var exception = new K1.Atlas.Ecommerce.WorkerEstoque.Ecommerce.Exceptions.ProdutoNaoEncontradoException(produtoId);
+        var exception = new K1.Atlas.Ecommerce.WorkerEstoque.Exceptions.ProdutoNaoEncontradoException(produtoId);
 
         // Assert
         Assert.NotNull(exception);

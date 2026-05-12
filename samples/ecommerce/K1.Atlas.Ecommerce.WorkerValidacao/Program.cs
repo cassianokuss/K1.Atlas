@@ -1,4 +1,4 @@
-using K1.Atlas.Ecommerce.WorkerValidacao.Ecommerce;
+using K1.Atlas.Ecommerce.WorkerValidacao;
 using K1.Atlas.Ecommerce.Contracts.Entities;
 using FluentValidation;
 

@@ -1,4 +1,4 @@
-using K1.Atlas.Ecommerce.WorkerEstoque.Ecommerce.Features.ReservarEstoque;
+using K1.Atlas.Ecommerce.WorkerEstoque.Features.ReservarEstoque;
 using K1.Atlas.Ecommerce.Contracts.Entities;
 using MediatR;
 using Xunit;

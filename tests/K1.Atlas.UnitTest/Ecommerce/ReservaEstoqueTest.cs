@@ -1,4 +1,4 @@
-using K1.Atlas.Ecommerce.WorkerEstoque.Ecommerce;
+using K1.Atlas.Ecommerce.WorkerEstoque;
 using K1.Atlas.Ecommerce.Contracts.Entities;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;

@@ -13,7 +13,7 @@ public class FiscalExceptionTest
         var tentativasRealizadas = 3;
 
         // Act
-        var exception = new K1.Atlas.Ecommerce.WorkerFiscal.Ecommerce.Exceptions.SefazException(
+        var exception = new K1.Atlas.Ecommerce.WorkerFiscal.Exceptions.SefazException(
             chaveAcesso, 
             motivoRejeicao, 
             tentativasRealizadas);
@@ -32,7 +32,7 @@ public class FiscalExceptionTest
     public void SefazException_Should_Derive_From_Exception()
     {
         // Arrange
-        var exception = new K1.Atlas.Ecommerce.WorkerFiscal.Ecommerce.Exceptions.SefazException(
+        var exception = new K1.Atlas.Ecommerce.WorkerFiscal.Exceptions.SefazException(
             "35210812345678901234567890123456789012345678", 
             "Timeout", 
             3);
@@ -51,7 +51,7 @@ public class FiscalExceptionTest
         var innerException = new InvalidOperationException("Network error");
 
         // Act
-        var exception = new K1.Atlas.Ecommerce.WorkerFiscal.Ecommerce.Exceptions.SefazException(
+        var exception = new K1.Atlas.Ecommerce.WorkerFiscal.Exceptions.SefazException(
             chaveAcesso, 
             motivoRejeicao, 
             tentativasRealizadas, 
@@ -73,7 +73,7 @@ public class FiscalExceptionTest
         var message = "Erro ao emitir nota fiscal: dados do cliente inválidos";
 
         // Act
-        var exception = new K1.Atlas.Ecommerce.WorkerFiscal.Ecommerce.Exceptions.EmissaoNotaFiscalException(
+        var exception = new K1.Atlas.Ecommerce.WorkerFiscal.Exceptions.EmissaoNotaFiscalException(
             pedidoId, 
             message);
 
@@ -88,7 +88,7 @@ public class FiscalExceptionTest
     public void EmissaoNotaFiscalException_Should_Derive_From_Exception()
     {
         // Arrange
-        var exception = new K1.Atlas.Ecommerce.WorkerFiscal.Ecommerce.Exceptions.EmissaoNotaFiscalException(
+        var exception = new K1.Atlas.Ecommerce.WorkerFiscal.Exceptions.EmissaoNotaFiscalException(
             "507f1f77bcf86cd799439011", 
             "Erro no cálculo de impostos");
 
@@ -105,7 +105,7 @@ public class FiscalExceptionTest
         var innerException = new ArgumentException("Alíquota inválida");
 
         // Act
-        var exception = new K1.Atlas.Ecommerce.WorkerFiscal.Ecommerce.Exceptions.EmissaoNotaFiscalException(
+        var exception = new K1.Atlas.Ecommerce.WorkerFiscal.Exceptions.EmissaoNotaFiscalException(
             pedidoId, 
             message, 
             innerException);
@@ -125,7 +125,7 @@ public class FiscalExceptionTest
         var pedidoId = "507f1f77bcf86cd799439011";
 
         // Act
-        var exception = new K1.Atlas.Ecommerce.WorkerFiscal.Ecommerce.Exceptions.EmissaoNotaFiscalException(pedidoId);
+        var exception = new K1.Atlas.Ecommerce.WorkerFiscal.Exceptions.EmissaoNotaFiscalException(pedidoId);
 
         // Assert
         Assert.NotNull(exception);

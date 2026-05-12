@@ -1,5 +1,5 @@
-using K1.Atlas.Ecommerce.WorkerEstoque.Ecommerce.Features.ReservarEstoque.Domain;
-using K1.Atlas.Ecommerce.WorkerEstoque.Ecommerce.Exceptions;
+using K1.Atlas.Ecommerce.WorkerEstoque.Features.ReservarEstoque.Domain;
+using K1.Atlas.Ecommerce.WorkerEstoque.Exceptions;
 using K1.Atlas.Ecommerce.Contracts.Entities;
 using Xunit;
 
