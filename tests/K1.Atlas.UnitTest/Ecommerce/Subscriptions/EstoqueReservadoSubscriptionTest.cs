@@ -1,5 +1,6 @@
 using K1.Atlas.Ecommerce.WorkerFiscal.Ecommerce;
-using K1.Atlas.Ecommerce.WorkerFiscal.Ecommerce.Commands;
+using K1.Atlas.Ecommerce.WorkerFiscal.Ecommerce.Features.EmitirNotaFiscal;
+using K1.Atlas.Ecommerce.Contracts.Entities;
 using K1.Atlas.PubSub.Consumer;
 using MediatR;
 using Moq;
@@ -24,7 +25,7 @@ public class EstoqueReservadoSubscriptionTest
     }
 
     [Fact]
-    public async Task ConsumeAsync_WithValidReservaEstoque_ShouldSendEmitirNotaFiscalCommand()
+    public async Task ConsumeAsync_WithValidReservaEstoque_ShouldSendEmitirNotaFiscal()
     {
         // Arrange
         var reserva = new ReservaEstoque

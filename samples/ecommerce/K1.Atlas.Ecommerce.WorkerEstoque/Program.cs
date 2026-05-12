@@ -1,8 +1,13 @@
 using K1.Atlas.Ecommerce.WorkerEstoque.Ecommerce;
+using K1.Atlas.Ecommerce.Contracts.Entities;
+using FluentValidation;
 
 var builder = Host.CreateApplicationBuilder(args);
 
 builder.ConfigureWorker(builder.Configuration);
+
+// Register FluentValidation
+builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 
 builder.Services.AddAsyncConsumer<Pedido, ReservarEstoqueSubscription>(
     builder => builder.ForRoutingKeys(

@@ -2,7 +2,8 @@ using K1.Atlas.PubSub.Consumer;
 using K1.Atlas.PubSub.HostedServices;
 using K1.Atlas.Domain.Repositories;
 using K1.Atlas.Telemetry.Logging;
-using K1.Atlas.Ecommerce.Api.Ecommerce.Events;
+using K1.Atlas.Ecommerce.Contracts.Events;
+using K1.Atlas.Ecommerce.Contracts.Entities;
 using System.Diagnostics;
 
 namespace K1.Atlas.Ecommerce.Api.Ecommerce.Subscriptions;

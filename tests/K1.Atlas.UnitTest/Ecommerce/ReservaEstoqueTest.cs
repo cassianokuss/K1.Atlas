@@ -1,4 +1,5 @@
 using K1.Atlas.Ecommerce.WorkerEstoque.Ecommerce;
+using K1.Atlas.Ecommerce.Contracts.Entities;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 using Xunit;
@@ -16,7 +17,7 @@ public class ReservaEstoqueTest
         // Assert
         Assert.NotNull(reserva.Id);
         Assert.NotEmpty(reserva.Id);
-        Assert.True(ObjectId.TryParse(reserva.Id, out _));
+        Assert.True(Guid.TryParse(reserva.Id, out _)); // ID is Guid, not ObjectId
         Assert.NotNull(reserva.Itens);
         Assert.Empty(reserva.Itens);
         Assert.Equal(StatusReserva.Ativa, reserva.Status);

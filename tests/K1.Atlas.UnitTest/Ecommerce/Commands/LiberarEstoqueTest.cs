@@ -1,4 +1,4 @@
-using K1.Atlas.Ecommerce.WorkerEstoque.Ecommerce.Commands;
+using K1.Atlas.Ecommerce.WorkerEstoque.Ecommerce.Features.LiberarEstoque;
 using MediatR;
 using Xunit;
 

@@ -1,4 +1,5 @@
 using K1.Atlas.Ecommerce.Api.Ecommerce;
+using K1.Atlas.Ecommerce.Contracts.Entities;
 using Xunit;
 
 namespace K1.Atlas.UnitTest.Ecommerce;

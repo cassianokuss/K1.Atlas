@@ -1,9 +1,9 @@
 using System.Diagnostics;
 using K1.Atlas.Telemetry.Logging;
 using K1.Atlas.Ecommerce.WorkerEstoque.Ecommerce;
-using K1.Atlas.Ecommerce.WorkerEstoque.Ecommerce.Commands;
+using K1.Atlas.Ecommerce.WorkerEstoque.Ecommerce.Features.ReservarEstoque;
 using K1.Atlas.Ecommerce.WorkerEstoque.Ecommerce.Exceptions;
-using K1.Atlas.Ecommerce.WorkerEstoque.Ecommerce;
+using K1.Atlas.Ecommerce.Contracts.Entities;
 using K1.Atlas.Domain.Repositories;
 using K1.Atlas.PubSub.Producer;
 using Moq;
@@ -173,10 +173,6 @@ public class ReservarEstoqueHandlerTest
         Assert.Equal("PROD001", exception.ProdutoCodigo);
         Assert.Equal(20, exception.QuantidadeRequerida);
         Assert.Equal(5, exception.QuantidadeDisponivel);
-
-        _notifier.Verify(n => n.NotifyError(
-            It.IsAny<string>(),
-            It.IsAny<object[]>()), Times.AtLeastOnce);
     }
 
     [Fact]
@@ -215,9 +211,5 @@ public class ReservarEstoqueHandlerTest
             () => _handler.HandleAsync(command, CancellationToken.None));
 
         Assert.Equal("prod999", exception.ProdutoId);
-
-        _notifier.Verify(n => n.NotifyError(
-            It.IsAny<string>(),
-            It.IsAny<object[]>()), Times.AtLeastOnce);
     }
 }

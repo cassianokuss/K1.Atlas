@@ -1,5 +1,6 @@
 using K1.Atlas.Ecommerce.WorkerEstoque.Ecommerce;
-using K1.Atlas.Ecommerce.WorkerEstoque.Ecommerce.Commands;
+using K1.Atlas.Ecommerce.WorkerEstoque.Ecommerce.Features.ReservarEstoque;
+using K1.Atlas.Ecommerce.Contracts.Entities;
 using K1.Atlas.PubSub.Consumer;
 using MediatR;
 using Moq;
@@ -24,7 +25,7 @@ public class ReservarEstoqueSubscriptionTest
     }
 
     [Fact]
-    public async Task ConsumeAsync_WithValidPedido_ShouldSendReservarEstoqueCommand()
+    public async Task ConsumeAsync_WithValidPedido_ShouldSendReservarEstoque()
     {
         // Arrange
         var pedido = new Pedido

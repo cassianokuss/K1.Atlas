@@ -1,6 +1,7 @@
 using K1.Atlas.Telemetry.Logging;
 using K1.Atlas.Ecommerce.WorkerValidacao.Ecommerce;
-using K1.Atlas.Ecommerce.WorkerValidacao.Ecommerce.Commands;
+using K1.Atlas.Ecommerce.Contracts.Entities;
+using K1.Atlas.Ecommerce.WorkerValidacao.Ecommerce.Features.ValidarCredito;
 using K1.Atlas.Ecommerce.WorkerValidacao.Ecommerce.Services;
 using OpenTelemetry.Trace;
 using OpenTelemetry.Metrics;

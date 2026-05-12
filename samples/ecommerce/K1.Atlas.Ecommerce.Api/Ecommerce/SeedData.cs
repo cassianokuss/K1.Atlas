@@ -1,4 +1,5 @@
 using MongoDB.Bson;
+using K1.Atlas.Ecommerce.Contracts.Entities;
 
 namespace K1.Atlas.Ecommerce.Api.Ecommerce;
 

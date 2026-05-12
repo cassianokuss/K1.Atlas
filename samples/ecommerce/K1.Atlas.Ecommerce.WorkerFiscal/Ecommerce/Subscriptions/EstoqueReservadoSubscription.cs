@@ -1,7 +1,8 @@
 using K1.Atlas.PubSub.Consumer;
 using K1.Atlas.PubSub.HostedServices;
 using MediatR;
-using K1.Atlas.Ecommerce.WorkerFiscal.Ecommerce.Commands;
+using K1.Atlas.Ecommerce.Contracts.Entities;
+using K1.Atlas.Ecommerce.WorkerFiscal.Ecommerce.Features.EmitirNotaFiscal;
 using K1.Atlas.Telemetry.Logging;
 using System.Diagnostics;
 

@@ -1,3 +1,5 @@
+using K1.Atlas.Ecommerce.Contracts.Entities;
+
 namespace K1.Atlas.Ecommerce.WorkerFiscal.Ecommerce.Services;
 
 /// <summary>

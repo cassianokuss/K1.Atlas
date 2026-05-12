@@ -1,6 +1,7 @@
 using K1.Atlas.Telemetry.Logging;
 using K1.Atlas.Ecommerce.WorkerEstoque.Ecommerce;
-using K1.Atlas.Ecommerce.WorkerEstoque.Ecommerce.Commands;
+using K1.Atlas.Ecommerce.Contracts.Entities;
+using K1.Atlas.Ecommerce.WorkerEstoque.Ecommerce.Features.ReservarEstoque;
 using OpenTelemetry.Trace;
 
 namespace Microsoft.Extensions.DependencyInjection;

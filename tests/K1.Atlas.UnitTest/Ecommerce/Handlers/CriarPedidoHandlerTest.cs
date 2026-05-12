@@ -2,7 +2,7 @@ using System.Diagnostics;
 using K1.Atlas.Telemetry.Logging;
 using K1.Atlas.Ecommerce.Api.Ecommerce;
 using K1.Atlas.Ecommerce.Api.Ecommerce.Commands;
-using K1.Atlas.Ecommerce.Api.Ecommerce;
+using K1.Atlas.Ecommerce.Contracts.Entities;
 using K1.Atlas.Domain.Repositories;
 using K1.Atlas.PubSub.Producer;
 using Moq;

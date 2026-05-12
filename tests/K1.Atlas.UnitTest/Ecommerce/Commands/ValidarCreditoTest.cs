@@ -1,5 +1,6 @@
-using K1.Atlas.Ecommerce.WorkerValidacao.Ecommerce;
-using K1.Atlas.Ecommerce.WorkerValidacao.Ecommerce.Commands;
+using K1.Atlas.Ecommerce.WorkerValidacao.Ecommerce.Features.ValidarCredito;
+using K1.Atlas.Ecommerce.Contracts.Entities;
+using K1.Atlas.Ecommerce.Contracts.ValueObjects;
 using MediatR;
 using Xunit;
 

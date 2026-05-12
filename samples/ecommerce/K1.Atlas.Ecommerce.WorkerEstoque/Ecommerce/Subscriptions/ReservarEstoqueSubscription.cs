@@ -1,7 +1,8 @@
 using K1.Atlas.PubSub.Consumer;
 using K1.Atlas.PubSub.HostedServices;
 using MediatR;
-using K1.Atlas.Ecommerce.WorkerEstoque.Ecommerce.Commands;
+using K1.Atlas.Ecommerce.Contracts.Entities;
+using K1.Atlas.Ecommerce.WorkerEstoque.Ecommerce.Features.ReservarEstoque;
 using K1.Atlas.Telemetry.Logging;
 using System.Diagnostics;
 

@@ -1,5 +1,6 @@
 using K1.Atlas.Telemetry.Logging;
 using K1.Atlas.Ecommerce.Api.Ecommerce;
+using K1.Atlas.Ecommerce.Contracts.Entities;
 using OpenTelemetry.Metrics;
 
 namespace Microsoft.Extensions.DependencyInjection;

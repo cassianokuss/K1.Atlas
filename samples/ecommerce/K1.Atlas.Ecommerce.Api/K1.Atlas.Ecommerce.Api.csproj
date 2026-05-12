@@ -7,6 +7,7 @@
     <ProjectReference Include="..\..\..\src\K1.Atlas.Telemetry\K1.Atlas.Telemetry.csproj" />
     <ProjectReference Include="..\..\..\src\K1.Atlas.PubSub.RabbitMQ\K1.Atlas.PubSub.RabbitMQ.csproj" />
     <ProjectReference Include="..\..\..\src\K1.Atlas.PubSub\K1.Atlas.PubSub.csproj" />
+    <ProjectReference Include="..\K1.Atlas.Ecommerce.Contracts\K1.Atlas.Ecommerce.Contracts.csproj" />
   </ItemGroup>
 
   <PropertyGroup>

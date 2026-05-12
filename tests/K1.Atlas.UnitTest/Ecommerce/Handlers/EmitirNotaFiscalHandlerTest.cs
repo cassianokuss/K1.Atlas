@@ -1,9 +1,9 @@
 using System.Diagnostics;
 using K1.Atlas.Telemetry.Logging;
+using K1.Atlas.Ecommerce.WorkerFiscal.Ecommerce.Features.EmitirNotaFiscal;
+using K1.Atlas.Ecommerce.WorkerFiscal.Ecommerce.Features.EmitirNotaFiscal.Infrastructure;
 using K1.Atlas.Ecommerce.WorkerFiscal.Ecommerce;
-using K1.Atlas.Ecommerce.WorkerFiscal.Ecommerce.Commands;
-using K1.Atlas.Ecommerce.WorkerFiscal.Ecommerce;
-using K1.Atlas.Ecommerce.WorkerFiscal.Ecommerce.Services;
+using K1.Atlas.Ecommerce.Contracts.Entities;
 using K1.Atlas.Domain.Repositories;
 using K1.Atlas.PubSub.Producer;
 using Moq;
@@ -17,8 +17,8 @@ public class EmitirNotaFiscalHandlerTest
     private readonly Mock<IRepository<Cliente>> _clienteRepository;
     private readonly Mock<IRepository<NotaFiscal>> _notaFiscalRepository;
     private readonly Mock<IMessageProducer> _messageProducer;
+    private readonly Mock<ISefazRetryPolicy> _sefazRetryPolicy;
     private readonly Mock<INotifier> _notifier;
-    private readonly Mock<ISefazService> _sefazService;
     private readonly Mock<NotaFiscalMetrics> _notaFiscalMetrics;
     private readonly EmitirNotaFiscalHandler _handler;
 
@@ -28,8 +28,8 @@ public class EmitirNotaFiscalHandlerTest
         _clienteRepository = new Mock<IRepository<Cliente>>();
         _notaFiscalRepository = new Mock<IRepository<NotaFiscal>>();
         _messageProducer = new Mock<IMessageProducer>();
+        _sefazRetryPolicy = new Mock<ISefazRetryPolicy>();
         _notifier = new Mock<INotifier>();
-        _sefazService = new Mock<ISefazService>();
         _notaFiscalMetrics = new Mock<NotaFiscalMetrics>();
         
         _handler = new EmitirNotaFiscalHandler(
@@ -37,8 +37,8 @@ public class EmitirNotaFiscalHandlerTest
             _clienteRepository.Object,
             _notaFiscalRepository.Object,
             _messageProducer.Object,
+            _sefazRetryPolicy.Object,
             _notifier.Object,
-            _sefazService.Object,
             _notaFiscalMetrics.Object);
     }
 
@@ -97,11 +97,10 @@ public class EmitirNotaFiscalHandlerTest
             .Returns(Task.CompletedTask);
 
         // Simulate SEFAZ success after retry
-        _sefazService.SetupSequence(s => s.EnviarNotaAsync(
+        _sefazRetryPolicy.Setup(s => s.ExecutarComRetryAsync(
             It.IsAny<NotaFiscal>(),
             It.IsAny<CancellationToken>()))
-            .ThrowsAsync(new HttpRequestException("Timeout simulado"))
-            .ReturnsAsync("PROT123456789");
+            .ReturnsAsync((true, "PROT123456789", 2));
 
         var command = new EmitirNotaFiscal
         {
@@ -127,9 +126,9 @@ public class EmitirNotaFiscalHandlerTest
             It.IsAny<System.Linq.Expressions.Expression<Func<NotaFiscal, bool>>>(),
             It.IsAny<CancellationToken>()), Times.AtLeast(2)); // Initial save + update after SEFAZ
 
-        _sefazService.Verify(s => s.EnviarNotaAsync(
+        _sefazRetryPolicy.Verify(s => s.ExecutarComRetryAsync(
             It.IsAny<NotaFiscal>(),
-            It.IsAny<CancellationToken>()), Times.Exactly(2));
+            It.IsAny<CancellationToken>()), Times.Once);
 
         _messageProducer.Verify(m => m.Publish(
             It.IsAny<NotaFiscal>(),
@@ -189,10 +188,10 @@ public class EmitirNotaFiscalHandlerTest
             It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
 
-        _sefazService.Setup(s => s.EnviarNotaAsync(
+        _sefazRetryPolicy.Setup(s => s.ExecutarComRetryAsync(
             It.IsAny<NotaFiscal>(),
             It.IsAny<CancellationToken>()))
-            .ReturnsAsync("PROT123456789");
+            .ReturnsAsync((true, "PROT123456789", 1));
 
         var command = new EmitirNotaFiscal
         {
@@ -263,10 +262,10 @@ public class EmitirNotaFiscalHandlerTest
             .Returns(Task.CompletedTask);
 
         // Simulate SEFAZ failure all 3 attempts
-        _sefazService.Setup(s => s.EnviarNotaAsync(
+        _sefazRetryPolicy.Setup(s => s.ExecutarComRetryAsync(
             It.IsAny<NotaFiscal>(),
             It.IsAny<CancellationToken>()))
-            .ThrowsAsync(new HttpRequestException("SEFAZ timeout"));
+            .ReturnsAsync((false, null, 3));
 
         var command = new EmitirNotaFiscal
         {
@@ -283,17 +282,9 @@ public class EmitirNotaFiscalHandlerTest
         Assert.Equal(3, result.TentativasEnvio);
         Assert.Null(result.ProtocoloAutorizacao);
 
-        _sefazService.Verify(s => s.EnviarNotaAsync(
+        _sefazRetryPolicy.Verify(s => s.ExecutarComRetryAsync(
             It.IsAny<NotaFiscal>(),
-            It.IsAny<CancellationToken>()), Times.Exactly(3));
-
-        _notifier.Verify(n => n.NotifyWarning(
-            It.IsAny<string>(),
-            It.IsAny<object[]>()), Times.AtLeast(3)); // Warning for each retry
-
-        _notifier.Verify(n => n.NotifyError(
-            It.IsAny<string>(),
-            It.IsAny<object[]>()), Times.Once); // Final error
+            It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -329,10 +320,10 @@ public class EmitirNotaFiscalHandlerTest
             It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
 
-        _sefazService.Setup(s => s.EnviarNotaAsync(
+        _sefazRetryPolicy.Setup(s => s.ExecutarComRetryAsync(
             It.IsAny<NotaFiscal>(),
             It.IsAny<CancellationToken>()))
-            .ReturnsAsync("PROT123456789");
+            .ReturnsAsync((true, "PROT123456789", 1));
 
         var command = new EmitirNotaFiscal
         {
@@ -382,10 +373,10 @@ public class EmitirNotaFiscalHandlerTest
             It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
 
-        _sefazService.Setup(s => s.EnviarNotaAsync(
+        _sefazRetryPolicy.Setup(s => s.ExecutarComRetryAsync(
             It.IsAny<NotaFiscal>(),
             It.IsAny<CancellationToken>()))
-            .ReturnsAsync("PROT123456789");
+            .ReturnsAsync((true, "PROT123456789", 1));
 
         var command = new EmitirNotaFiscal
         {

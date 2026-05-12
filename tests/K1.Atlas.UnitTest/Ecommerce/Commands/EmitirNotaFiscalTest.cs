@@ -1,5 +1,5 @@
-using K1.Atlas.Ecommerce.WorkerFiscal.Ecommerce;
-using K1.Atlas.Ecommerce.WorkerFiscal.Ecommerce.Commands;
+using K1.Atlas.Ecommerce.WorkerFiscal.Ecommerce.Features.EmitirNotaFiscal;
+using K1.Atlas.Ecommerce.Contracts.Entities;
 using MediatR;
 using Xunit;
 

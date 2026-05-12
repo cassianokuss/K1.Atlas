@@ -1,6 +1,7 @@
 using K1.Atlas.Domain.Repositories;
 using K1.Atlas.PubSub.Producer;
 using K1.Atlas.Telemetry.Logging;
+using K1.Atlas.Ecommerce.Contracts.Entities;
 using MediatR;
 
 namespace K1.Atlas.Ecommerce.Api.Ecommerce.Commands;
